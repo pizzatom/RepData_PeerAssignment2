@@ -1,0 +1,15 @@
+---
+title: "PA2_WeatherProject"
+author: "Thomas R Nudell"
+date: "January 4, 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+This data analysis addresses the two following questions:
+
+1. Across the United States, which types of events (as indicated in the EVTYPE variable) are most harmful with respect to population health?
+2. Across the United States, which types of events have the greatest economic consequences?
