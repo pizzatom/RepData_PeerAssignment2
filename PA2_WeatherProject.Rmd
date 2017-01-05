@@ -19,8 +19,23 @@ This data analysis addresses the two following questions:
 [//]: # (Summary of analysis)
 
 ## Data Processing
-
 [//]: # (Describe how data is loaded into R and processed for analysis, starting from Raw Data)
+
+The data we will analize is a National Oceanic and Atmospheric Administration (NOAA) storm database. This data comes in the form of a comma seperated value (csv) file compressed with the bzip2 (bz2) algorithm.
+We will name data file `StormData.csv.bz2`. 
+```{r}
+f.data <- "StormData.csv.bz2"
+```
+
+If the data doesn't already exists in the same directory as this script, we will need to download it from the course website. Note that the `knitr` package automatically temporarilly changes the working directory to the directory of this script when executing code chunks, so there is no need to call `setwd()`. 
+
+```{r}
+if (!file.exists(f.data)) {
+  f.url <- "https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2"
+  download.file(f.url,f.data, method="curl")
+}
+```
+
 
 ## Results 
 
