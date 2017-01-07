@@ -36,6 +36,13 @@ if (!file.exists(f.data)) {
 }
 ```
 
+We next read the data into memory. We will use `cache=TRUE` so we only have to read from the disk once during the course of analysis. 
+
+```{r, cache=TRUE}
+df <- read.csv(f.data)
+```
+
+
 
 ## Results 
 
