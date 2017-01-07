@@ -42,14 +42,13 @@ We next read the data into memory. We will use `cache=TRUE` so we only have to r
 df <- read.csv(f.data)
 ```
 
-## Description of Data and Methods
-This section describes that data and methods used to answer the two questions laid out at the top of the report. 
-Namely,
+### Preprocessing
+Our data set contains information about 985 different types of events, listed in the `EVTYPE` variable, which can be seen by taking a peak at the unique entries. 
+```{r}
+print(unique(df$EVTYPE))
+```
 
-1. Across the United States, which types of events (as indicated in the `EVTYPE` variable) are most harmful with respect to population health?
-2. Across the United States, which types of events have the greatest economic consequences?
-
-We describe the data and methods in three subsection related to, respectively, *events*, *population health*, and *economic consequences*.
+Looking at these unique entries also raises some questions about the cleanliness of this data. For example, `TSTM WIND` represents the same thing as `THUNDERSTORM WIND` which is the same as `THUNDERSTORM WINDS`, etc. To make matters more complicated, these examples (and others) represent three categories: `THUNDERSTORM` and `WIND` and `THUNDERSTORM + WIND`. IN summary, our data is not clean and not tidy, so we have some work to do. 
 
 
 ## Results 
