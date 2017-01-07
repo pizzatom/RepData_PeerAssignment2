@@ -13,7 +13,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 This data analysis addresses the two following questions:
 
-1. Across the United States, which types of events (as indicated in the EVTYPE variable) are most harmful with respect to population health?
+1. Across the United States, which types of events (as indicated in the `EVTYPE` variable) are most harmful with respect to population health?
 2. Across the United States, which types of events have the greatest economic consequences?
 
 [//]: # (Summary of analysis)
@@ -38,10 +38,18 @@ if (!file.exists(f.data)) {
 
 We next read the data into memory. We will use `cache=TRUE` so we only have to read from the disk once during the course of analysis. 
 
-```{r, cache=TRUE}
+```{r cache=TRUE}
 df <- read.csv(f.data)
 ```
 
+## Description of Data and Methods
+This section describes that data and methods used to answer the two questions laid out at the top of the report. 
+Namely,
+
+1. Across the United States, which types of events (as indicated in the `EVTYPE` variable) are most harmful with respect to population health?
+2. Across the United States, which types of events have the greatest economic consequences?
+
+We describe the data and methods in three subsection related to, respectively, *events*, *population health*, and *economic consequences*.
 
 
 ## Results 
