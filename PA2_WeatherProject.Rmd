@@ -68,11 +68,18 @@ EVTYPE <- separate(EVTYPE,V1, into = "NAMES", sep="[C,Z,M]$")
 EVTYPE$NAMES <- str_trim(EVTYPE$NAMES, side="both")
 ```
 
-Next we do some fuzzy matching/converstion
-```{r}
-out <- lapply(EVTYPE$NAMES, agrep, x=df$EVTYPE, ignore.case=TRUE, value=TRUE)
+Next we do some fuzzy matching/converstion. We will just do a brute force replace of the closest `EVTYPE` variable with the closest matching item from our `EVTYPE$NAMES`. If you are reading this and know of a better way to do it, I'm eager to learn. 
 
+```{r cache = TRUE}
+df %>% mutate(EVTYPE, EVTYPEchar = as.character(EVTYPE))
+logi_names <- as.data.frame(sapply(EVTYPE$NAMES, agrepl, x=df$EVTYPEchar, ignore.case=TRUE, max.distance ))
+logdf <- as.data.frame(lapping)
+for (name in names(logdf)) {
+    test[logdf[[name]]] <- as.character(name)
+  }
 ```
+
+
 
 
 ## Results 
