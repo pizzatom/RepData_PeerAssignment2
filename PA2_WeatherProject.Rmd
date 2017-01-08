@@ -8,6 +8,11 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
+```{r}
+library(dplyr)
+library(tidyr)
+```
+
 
 ## Summary
 
@@ -48,7 +53,20 @@ Our data set contains information about 985 different types of events, listed in
 print(unique(df$EVTYPE))
 ```
 
-Looking at these unique entries also raises some questions about the cleanliness of this data. For example, `TSTM WIND` represents the same thing as `THUNDERSTORM WIND` which is the same as `THUNDERSTORM WINDS`, etc. To make matters more complicated, these examples (and others) represent three categories: `THUNDERSTORM` and `WIND` and `THUNDERSTORM + WIND`. IN summary, our data is not clean and not tidy, so we have some work to do. 
+Looking at these unique entries also raises some questions about the cleanliness of this data. For example, `TSTM WIND` represents the same thing as `THUNDERSTORM WIND` which is the same as `THUNDERSTORM WINDS`, etc. In summary, our data is not clean and not tidy. However, because this project is not designed to test how well one can clean and tidy data, so I'll just walk through a few quick proceedures to tidy things up a bit. 
+
+The documentation for this data, [Storm Data Documentation](https://d396qusza40orc.cloudfront.net/repdata%2Fpeer2_doc%2Fpd01016005curr.pdf) only lists 48 different event types (see Table 1 on Page 6). I couldn't find a tablular form of this data so I copy/pasted Table 1 into a text file `EVTYPE.txt` and read it in using `read.delim` specifying a new line as the deliminator. 
+
+```{r}
+EVTYPE <- read.delim('EVTYPE.txt', header=FALSE, sep = "\n")
+```
+The are "[C/Z/M]" characters that indicate what type of region the event was recorded in. We want to give them their own column in our table. First we just extract the event types
+
+```{r}
+EVTYPE <- separate(EVTYPE, V1, into = "NAMES", sep="[C,Z,M]$")
+```
+
+Next we do some fuzzy matching/converstion
 
 
 ## Results 
