@@ -8,10 +8,15 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
-```{r}
+```{r libraries}
 library(dplyr)
 library(tidyr)
 library(stringr)
+library(ggplot2)
+```
+
+```{r working directory}
+setwd("/home/trn/Dropbox/xxX/xxR/RRR/RepData_PeerAssignment2")
 ```
 
 
@@ -29,13 +34,13 @@ This data analysis addresses the two following questions:
 
 The data we will analize is a National Oceanic and Atmospheric Administration (NOAA) storm database. This data comes in the form of a comma seperated value (csv) file compressed with the bzip2 (bz2) algorithm.
 We will name data file `StormData.csv.bz2`. 
-```{r}
+```{r name data}
 f.data <- "StormData.csv.bz2"
 ```
 
 If the data doesn't already exists in the same directory as this script, we will need to download it from the course website. Note that the `knitr` package automatically temporarilly changes the working directory to the directory of this script when executing code chunks, so there is no need to call `setwd()`. 
 
-```{r}
+```{r download data}
 if (!file.exists(f.data)) {
   f.url <- "https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2"
   download.file(f.url,f.data, method="curl")
@@ -44,44 +49,69 @@ if (!file.exists(f.data)) {
 
 We next read the data into memory. We will use `cache=TRUE` so we only have to read from the disk once during the course of analysis. 
 
-```{r cache=TRUE}
+```{r read data, cache=TRUE}
 df <- read.csv(f.data)
 ```
 
 ### Preprocessing
 Our data set contains information about 985 different types of events, listed in the `EVTYPE` variable, which can be seen by taking a peak at the unique entries. 
-```{r}
-print(unique(df$EVTYPE))
+```{r unique events}
+#print(unique(df$EVTYPE))
 ```
 
 Looking at these unique entries also raises some questions about the cleanliness of this data. For example, `TSTM WIND` represents the same thing as `THUNDERSTORM WIND` which is the same as `THUNDERSTORM WINDS`, etc. In summary, our data is not clean and not tidy. However, because this project is not designed to test how well one can clean and tidy data, so I'll just walk through a few quick proceedures to tidy things up a bit. 
 
 The documentation for this data, [Storm Data Documentation](https://d396qusza40orc.cloudfront.net/repdata%2Fpeer2_doc%2Fpd01016005curr.pdf) only lists 48 different event types (see Table 1 on Page 6). I couldn't find a tablular form of this data so I copy/pasted Table 1 into a text file `EVTYPE.txt` and read it in using `read.delim` specifying a new line as the deliminator. 
 
-```{r}
+```{r EVTYPE table}
 EVTYPE <- read.delim('EVTYPE.txt', header=FALSE, sep = "\n")
 ```
 The are "[C/Z/M]" characters at the end of the string that indicate what type of region the event was recorded in. Eventually it would be nice to give them their own column in our table. First we just extract the event types out. 
 
-```{r}
+```{r EVTYPE$NAMES}
 EVTYPE <- separate(EVTYPE,V1, into = "NAMES", sep="[C,Z,M]$")
 EVTYPE$NAMES <- str_trim(EVTYPE$NAMES, side="both")
 ```
 
 Next we do some fuzzy matching/converstion. We will just do a brute force replace of the closest `EVTYPE` variable with the closest matching item from our `EVTYPE$NAMES`. If you are reading this and know of a better way to do it, I'm eager to learn. 
 
-```{r cache = TRUE}
-df %>% mutate(EVTYPE, EVTYPEchar = as.character(EVTYPE))
-logi_names <- as.data.frame(sapply(EVTYPE$NAMES, agrepl, x=df$EVTYPEchar, ignore.case=TRUE, max.distance ))
-logdf <- as.data.frame(lapping)
-for (name in names(logdf)) {
-    test[logdf[[name]]] <- as.character(name)
-  }
+```{r}
+#df %>% mutate(EVTYPE, EVTYPEchar = as.character(EVTYPE))
+#type_match <- sapply(EVTYPE$NAMES, agrepl, x=df$EVTYPE, ignore.case=TRUE, max.distance = 10)
+#type_match_df <- as.data.frame(type_match)
+#for (name in names(type_match_df)) {
+#    test[logdf[[name]]] <- as.character(name)
+#  }
 ```
-
 
 
 
 ## Results 
 
 [//]: # (Main results including 1--3 figures with descriptive captions)
+
+### Population Health
+We will measure population health impacts as the total number of `INJURIES` plus the total number of `FATALITIES` for a given event. TO clean things up a bit, we create a new dataframe with summarization of `INJURIES` plus `FATALITIES` by `EVTYPE`.
+```{r population health}
+health_df <- select(df,EVTYPE,INJURIES,FATALITIES) %>%
+             mutate(HEALTH_IMPACT = INJURIES + FATALITIES) %>%
+             group_by(EVTYPE) %>%
+             summarize(TOTAL_HEALTH = sum(HEALTH_IMPACT))
+```
+
+
+The first thing to notice is that most events have no health impact, so in order to get a better picture of impactful events, we filter those with no impact. 
+
+```{r filter non health impact events}
+health_df <- filter(health_df, TOTAL_HEALTH != 0)
+```
+
+The event type with biggest impact (by our measure) is "TORNADO".
+A great way to understand this data is with a plot of all of the impactful event types. 
+
+```{r plot of population health}
+f <- ggplot(health_df, aes(x = EVTYPE, y= TOTAL_HEALTH))
+f + geom_point()
+```
+
+
