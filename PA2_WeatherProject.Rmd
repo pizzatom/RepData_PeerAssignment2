@@ -11,6 +11,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r}
 library(dplyr)
 library(tidyr)
+library(stringr)
 ```
 
 
@@ -60,13 +61,18 @@ The documentation for this data, [Storm Data Documentation](https://d396qusza40o
 ```{r}
 EVTYPE <- read.delim('EVTYPE.txt', header=FALSE, sep = "\n")
 ```
-The are "[C/Z/M]" characters that indicate what type of region the event was recorded in. We want to give them their own column in our table. First we just extract the event types
+The are "[C/Z/M]" characters at the end of the string that indicate what type of region the event was recorded in. Eventually it would be nice to give them their own column in our table. First we just extract the event types out. 
 
 ```{r}
-EVTYPE <- separate(EVTYPE, V1, into = "NAMES", sep="[C,Z,M]$")
+EVTYPE <- separate(EVTYPE,V1, into = "NAMES", sep="[C,Z,M]$")
+EVTYPE$NAMES <- str_trim(EVTYPE$NAMES, side="both")
 ```
 
 Next we do some fuzzy matching/converstion
+```{r}
+out <- lapply(EVTYPE$NAMES, agrep, x=df$EVTYPE, ignore.case=TRUE, value=TRUE)
+
+```
 
 
 ## Results 
