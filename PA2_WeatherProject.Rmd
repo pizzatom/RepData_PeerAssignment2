@@ -73,37 +73,19 @@ EVTYPE <- separate(EVTYPE,V1, into = "NAMES", sep="[C,Z,M]$")
 EVTYPE$NAMES <- str_trim(EVTYPE$NAMES, side="both")
 ```
 
-Next we do some fuzzy matching/converstion. We will just do a brute force replace of the closest `EVTYPE` variable with the closest matching item from our `EVTYPE$NAMES`. If you are reading this and know of a better way to do it, I'm eager to learn. 
+Next we do some convert the coded names to the closest true `EVTYPE`. If you know of a better way to do this, please let me know; I'm eager to learn. This first function will take an input string and return the closest element in `EVTYPE$NAMES`. It requires the `stringdist` package. 
 
-```{r}
-# NOTE TO SELF: consider using dplyr::group_by(EVTYPE) with dplyr::mutate and agrepl  
-#df %>% mutate(EVTYPE, EVTYPEchar = as.character(EVTYPE))
-#type_match <- sapply(EVTYPE$NAMES, agrepl, x=df$EVTYPE, ignore.case=TRUE, max.distance = 10)
-#type_match_df <- as.data.frame(type_match)
-#for (name in names(type_match_df)) {
-#    test[logdf[[name]]] <- as.character(name)
-#  }
-```
+```{r fixing EVTYPE in the df, cache=TRUE}
+library("stringdist")
+evtypeMatch <- function(X){
+  as.character(EVTYPE$NAMES[which.min(stringdist(toupper(X),toupper(EVTYPE$NAMES)))])
+} 
 
-```{r group}
-test_df <- df %>% 
-           mutate(GRPS = sapply(EVTYPE$NAMES, agrepl, x=df$EVTYPE, ignore.case=TRUE, max.distance = 10)) 
-
-```
-
-```{r group}
-plot_test <- test_df %>%
-            select(EVTYPE,GRPS,INJURIES,FATALITIES) %>%
-            mutate(HEALTH_IMPACT=INJURIES+FATALITIES) %>%
-            group_by(GRPS) %>%
-            summarize(TOTAL_HEALTH=sum(HEALTH_IMPACT))
-
-g.test <- ggplot(plot_test, aes(x=GRPS, y=TOTAL_HEALTH))
-g.test + geom_point()
+df <- mutate(df,EVTYPE = sapply(df$EVTYPE,evtypeMatch))
 ```
 
 
-
+Next, we note that the values in `PROPDMG` and `CROPDMG` need to be adjusted by orders of magnitude according the entries in `PROPDMPEXP` and `CROPDMPEXP` repsectively. The valid values are “K” for thousands, “M” for millions, and “B” for billions. We use a similar technique as we used to fix the `EVTYPE` variable to scale `PROPDMG` and `CROPDMG`. 
 
 
 ## Results 
@@ -120,24 +102,26 @@ health_df <- df %>%
              summarize(TOTAL_HEALTH = sum(HEALTH_IMPACT))
 ```
 
-
-The first thing to notice is that most events have no health impact, so in order to get a better picture of impactful events, we filter those with no impact. 
+The first thing to notice is that most events have no health impact, so in order to get a better picture of impactful events, we filter out all event types with no health impacts. 
 
 ```{r filter non health impact events}
 health_df <- filter(health_df, TOTAL_HEALTH != 0)
 ```
 
-The event type with biggest impact (by our measure) is "TORNADO".
-A great way to understand this data is with a plot of all of the impactful event types. You can see in the graph that the tornados are far and away the most impactful weather event on human health. 
-
-```{r plot of population health}
-g.health <- ggplot(health_df, aes(x = EVTYPE, y= TOTAL_HEALTH))
+```{r plot evtypes}
+g.health <- ggplot(health_df, aes(x=EVTYPE, y=TOTAL_HEALTH))
 g.health + geom_point()
+```
+
+
+We can see in the plot that one event type has far and away the largest health impact, and that event type is "Tornado".
+```{r}
+print(health_df$EVTYPE[which.max(health_df$TOTAL_HEALTH)])
 ```
 
 ### Economic Consequences 
 
-We measure economic consequences as the sum of property damage (`PROPDMG`), crop damage (`CROPDMG`). It's important to note the expression (`*EXP`) for these two variables, which provide the order of magnitude of the value. The valid values are “K” for thousands, “M” for millions, and “B” for billions.
+We measure economic consequences as the sum of property damage (`PROPDMG`), crop damage (`CROPDMG`). 
 
 ```{r economic consequences}
 econ_df <-   df %>% 
