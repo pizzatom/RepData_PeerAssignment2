@@ -76,6 +76,7 @@ EVTYPE$NAMES <- str_trim(EVTYPE$NAMES, side="both")
 Next we do some fuzzy matching/converstion. We will just do a brute force replace of the closest `EVTYPE` variable with the closest matching item from our `EVTYPE$NAMES`. If you are reading this and know of a better way to do it, I'm eager to learn. 
 
 ```{r}
+# NOTE TO SELF: consider using dplyr::group_by(EVTYPE) with dplyr::mutate and agrepl  
 #df %>% mutate(EVTYPE, EVTYPEchar = as.character(EVTYPE))
 #type_match <- sapply(EVTYPE$NAMES, agrepl, x=df$EVTYPE, ignore.case=TRUE, max.distance = 10)
 #type_match_df <- as.data.frame(type_match)
@@ -83,6 +84,25 @@ Next we do some fuzzy matching/converstion. We will just do a brute force replac
 #    test[logdf[[name]]] <- as.character(name)
 #  }
 ```
+
+```{r group}
+test_df <- df %>% 
+           mutate(GRPS = sapply(EVTYPE$NAMES, agrepl, x=df$EVTYPE, ignore.case=TRUE, max.distance = 10)) 
+
+```
+
+```{r group}
+plot_test <- test_df %>%
+            select(EVTYPE,GRPS,INJURIES,FATALITIES) %>%
+            mutate(HEALTH_IMPACT=INJURIES+FATALITIES) %>%
+            group_by(GRPS) %>%
+            summarize(TOTAL_HEALTH=sum(HEALTH_IMPACT))
+
+g.test <- ggplot(plot_test, aes(x=GRPS, y=TOTAL_HEALTH))
+g.test + geom_point()
+```
+
+
 
 
 
@@ -93,7 +113,8 @@ Next we do some fuzzy matching/converstion. We will just do a brute force replac
 ### Population Health
 We will measure population health impacts as the total number of `INJURIES` plus the total number of `FATALITIES` for a given event. TO clean things up a bit, we create a new dataframe with summarization of `INJURIES` plus `FATALITIES` by `EVTYPE`.
 ```{r population health}
-health_df <- select(df,EVTYPE,INJURIES,FATALITIES) %>%
+health_df <- df %>% 
+             select(EVTYPE,INJURIES,FATALITIES) %>%
              mutate(HEALTH_IMPACT = INJURIES + FATALITIES) %>%
              group_by(EVTYPE) %>%
              summarize(TOTAL_HEALTH = sum(HEALTH_IMPACT))
@@ -107,11 +128,29 @@ health_df <- filter(health_df, TOTAL_HEALTH != 0)
 ```
 
 The event type with biggest impact (by our measure) is "TORNADO".
-A great way to understand this data is with a plot of all of the impactful event types. 
+A great way to understand this data is with a plot of all of the impactful event types. You can see in the graph that the tornados are far and away the most impactful weather event on human health. 
 
 ```{r plot of population health}
-f <- ggplot(health_df, aes(x = EVTYPE, y= TOTAL_HEALTH))
-f + geom_point()
+g.health <- ggplot(health_df, aes(x = EVTYPE, y= TOTAL_HEALTH))
+g.health + geom_point()
 ```
 
+### Economic Consequences 
+
+We measure economic consequences as the sum of property damage (`PROPDMG`), crop damage (`CROPDMG`). It's important to note the expression (`*EXP`) for these two variables, which provide the order of magnitude of the value. The valid values are “K” for thousands, “M” for millions, and “B” for billions.
+
+```{r economic consequences}
+econ_df <-   df %>% 
+             select(EVTYPE,PROPDMG,CROPDMG,PROPDMGEXP,CROPDMGEXP) %>%
+             mutate(DMG = PROPDMG +CROPDMG) %>%
+             group_by(EVTYPE) %>%
+             summarize(TOTAL_DMG = sum(DMG)) %>%
+             filter(TOTAL_DMG > 1e6)
+```
+
+Then we plot it. It looks like 
+```{r econ plot}
+g.econ <- ggplot(econ_df, aes(x = EVTYPE, y=TOTAL_DMG))
+g.econ + geom_point()
+```
 
