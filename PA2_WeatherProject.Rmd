@@ -85,7 +85,28 @@ df <- mutate(df,EVTYPE = sapply(df$EVTYPE,evtypeMatch))
 ```
 
 
-Next, we note that the values in `PROPDMG` and `CROPDMG` need to be adjusted by orders of magnitude according the entries in `PROPDMPEXP` and `CROPDMPEXP` repsectively. The valid values are “K” for thousands, “M” for millions, and “B” for billions. We use a similar technique as we used to fix the `EVTYPE` variable to scale `PROPDMG` and `CROPDMG`. 
+Next, we note that the values in `PROPDMG` and `CROPDMG` need to be adjusted by orders of magnitude according the entries in `PROPDMPEXP` and `CROPDMPEXP` repsectively. The valid values are “K” for thousands, “M” for millions, and “B” for billions. We will add a new variable which maps the alphabetical code to a numerical magnitude, then mutate the variables.  
+
+```{r}
+magnitude <- data.frame(ALPHA=c("K", "M","B"), MAG=c(1e3,1e6,1e9))
+```
+
+
+```{r}
+test <-df %>% 
+       select(EVTYPE, PROPDMG, CROPDMG, PROPDMGEXP, CROPDMGEXP) %>%
+       mutate(CROPDMGEXP=toupper(CROPDMGEXP)) %>%
+       mutate(PROPDMGEXP=toupper(PROPDMGEXP))
+
+test <- left_join(x=test,y=magnitude,by=c('CROPDMGEXP'='ALPHA')) %>%
+        mutate(CROPDMG=CROPDMG*MAG) %>%
+        select(-MAG) %>%
+        left_join(x=test,y=magnitude,by=c('PROPDMGEXP'='ALPHA')) %>%
+        mutate(PROPDMG=PROPDMG*MAG) %>%
+        select(-MAG)
+head(test)
+```
+
 
 
 ## Results 
