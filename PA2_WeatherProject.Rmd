@@ -38,7 +38,7 @@ We will name data file `StormData.csv.bz2`.
 f.data <- "StormData.csv.bz2"
 ```
 
-If the data doesn't already exists in the same directory as this script, we will need to download it from the course website. Note that the `knitr` package automatically temporarilly changes the working directory to the directory of this script when executing code chunks, so there is no need to call `setwd()`. 
+If the data doesn't already exists in the same directory as this script, we will need to download it from the course website. 
 
 ```{r download data}
 if (!file.exists(f.data)) {
