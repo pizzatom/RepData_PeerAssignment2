@@ -148,17 +148,511 @@ library(ggplot2)</code></pre>
 <h2>Data Processing</h2>
 <p>The data we will analize is a National Oceanic and Atmospheric Administration (NOAA) storm database. This data comes in the form of a comma seperated value (csv) file compressed with the bzip2 (bz2) algorithm. We will name data file <code>StormData.csv.bz2</code>.</p>
 <pre class="r"><code>f.data &lt;- &quot;StormData.csv.bz2&quot;</code></pre>
-<p>If the data doesn’t already exists in the same directory as this script, we will need to download it from the course website. Note that the <code>knitr</code> package automatically temporarilly changes the working directory to the directory of this script when executing code chunks, so there is no need to call <code>setwd()</code>.</p>
+<p>If the data doesn’t already exists in the same directory as this script, we will need to download it from the course website.</p>
 <pre class="r"><code>if (!file.exists(f.data)) {
   f.url &lt;- &quot;https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2&quot;
   download.file(f.url,f.data, method=&quot;curl&quot;)
 }</code></pre>
-<p>We next read the data into memory. We will use <code>cache=TRUE</code> so we only have to read from the disk once during the course of analysis.</p>
+<p>We next read the data into memory.</p>
 <pre class="r"><code>df &lt;- read.csv(f.data)</code></pre>
 <div id="preprocessing" class="section level3">
 <h3>Preprocessing</h3>
 <p>Our data set contains information about 985 different types of events, listed in the <code>EVTYPE</code> variable, which can be seen by taking a peak at the unique entries.</p>
-<pre class="r"><code>#print(unique(df$EVTYPE))</code></pre>
+<pre class="r"><code>print(unique(df$EVTYPE))</code></pre>
+<pre><code>##   [1] TORNADO                        TSTM WIND                     
+##   [3] HAIL                           FREEZING RAIN                 
+##   [5] SNOW                           ICE STORM/FLASH FLOOD         
+##   [7] SNOW/ICE                       WINTER STORM                  
+##   [9] HURRICANE OPAL/HIGH WINDS      THUNDERSTORM WINDS            
+##  [11] RECORD COLD                    HURRICANE ERIN                
+##  [13] HURRICANE OPAL                 HEAVY RAIN                    
+##  [15] LIGHTNING                      THUNDERSTORM WIND             
+##  [17] DENSE FOG                      RIP CURRENT                   
+##  [19] THUNDERSTORM WINS              FLASH FLOOD                   
+##  [21] FLASH FLOODING                 HIGH WINDS                    
+##  [23] FUNNEL CLOUD                   TORNADO F0                    
+##  [25] THUNDERSTORM WINDS LIGHTNING   THUNDERSTORM WINDS/HAIL       
+##  [27] HEAT                           WIND                          
+##  [29] LIGHTING                       HEAVY RAINS                   
+##  [31] LIGHTNING AND HEAVY RAIN       FUNNEL                        
+##  [33] WALL CLOUD                     FLOODING                      
+##  [35] THUNDERSTORM WINDS HAIL        FLOOD                         
+##  [37] COLD                           HEAVY RAIN/LIGHTNING          
+##  [39] FLASH FLOODING/THUNDERSTORM WI WALL CLOUD/FUNNEL CLOUD       
+##  [41] THUNDERSTORM                   WATERSPOUT                    
+##  [43] EXTREME COLD                   HAIL 1.75)                    
+##  [45] LIGHTNING/HEAVY RAIN           HIGH WIND                     
+##  [47] BLIZZARD                       BLIZZARD WEATHER              
+##  [49] WIND CHILL                     BREAKUP FLOODING              
+##  [51] HIGH WIND/BLIZZARD             RIVER FLOOD                   
+##  [53] HEAVY SNOW                     FREEZE                        
+##  [55] COASTAL FLOOD                  HIGH WIND AND HIGH TIDES      
+##  [57] HIGH WIND/BLIZZARD/FREEZING RA HIGH TIDES                    
+##  [59] HIGH WIND AND HEAVY SNOW       RECORD COLD AND HIGH WIND     
+##  [61] RECORD HIGH TEMPERATURE        RECORD HIGH                   
+##  [63] HIGH WINDS HEAVY RAINS         HIGH WIND/ BLIZZARD           
+##  [65] ICE STORM                      BLIZZARD/HIGH WIND            
+##  [67] HIGH WIND/LOW WIND CHILL       HEAVY SNOW/HIGH               
+##  [69] RECORD LOW                     HIGH WINDS AND WIND CHILL     
+##  [71] HEAVY SNOW/HIGH WINDS/FREEZING LOW TEMPERATURE RECORD        
+##  [73] AVALANCHE                      MARINE MISHAP                 
+##  [75] WIND CHILL/HIGH WIND           HIGH WIND/WIND CHILL/BLIZZARD 
+##  [77] HIGH WIND/WIND CHILL           HIGH WIND/HEAVY SNOW          
+##  [79] HIGH TEMPERATURE RECORD        FLOOD WATCH/                  
+##  [81] RECORD HIGH TEMPERATURES       HIGH WIND/SEAS                
+##  [83] HIGH WINDS/HEAVY RAIN          HIGH SEAS                     
+##  [85] SEVERE TURBULENCE              RECORD RAINFALL               
+##  [87] RECORD SNOWFALL                RECORD WARMTH                 
+##  [89] HEAVY SNOW/WIND                EXTREME HEAT                  
+##  [91] WIND DAMAGE                    DUST STORM                    
+##  [93] APACHE COUNTY                  SLEET                         
+##  [95] HAIL STORM                     FUNNEL CLOUDS                 
+##  [97] FLASH FLOODS                   DUST DEVIL                    
+##  [99] EXCESSIVE HEAT                 THUNDERSTORM WINDS/FUNNEL CLOU
+## [101] WINTER STORM/HIGH WIND         WINTER STORM/HIGH WINDS       
+## [103] GUSTY WINDS                    STRONG WINDS                  
+## [105] FLOODING/HEAVY RAIN            SNOW AND WIND                 
+## [107] HEAVY SURF COASTAL FLOODING    HEAVY SURF                    
+## [109] HEAVY PRECIPATATION            URBAN FLOODING                
+## [111] HIGH SURF                      BLOWING DUST                  
+## [113] URBAN/SMALL                    WILD FIRES                    
+## [115] HIGH                           URBAN/SMALL FLOODING          
+## [117] WATER SPOUT                    HIGH WINDS DUST STORM         
+## [119] WINTER STORM HIGH WINDS        LOCAL FLOOD                   
+## [121] WINTER STORMS                  MUDSLIDES                     
+## [123] RAINSTORM                      SEVERE THUNDERSTORM           
+## [125] SEVERE THUNDERSTORMS           SEVERE THUNDERSTORM WINDS     
+## [127] THUNDERSTORMS WINDS            DRY MICROBURST                
+## [129] FLOOD/FLASH FLOOD              FLOOD/RAIN/WINDS              
+## [131] WINDS                          DRY MICROBURST 61             
+## [133] THUNDERSTORMS                  FLASH FLOOD WINDS             
+## [135] URBAN/SMALL STREAM FLOODING    MICROBURST                    
+## [137] STRONG WIND                    HIGH WIND DAMAGE              
+## [139] STREAM FLOODING                URBAN AND SMALL               
+## [141] HEAVY SNOWPACK                 ICE                           
+## [143] FLASH FLOOD/                   DOWNBURST                     
+## [145] GUSTNADO AND                   FLOOD/RAIN/WIND               
+## [147] WET MICROBURST                 DOWNBURST WINDS               
+## [149] DRY MICROBURST WINDS           DRY MIRCOBURST WINDS          
+## [151] DRY MICROBURST 53              SMALL STREAM URBAN FLOOD      
+## [153] MICROBURST WINDS               HIGH WINDS 57                 
+## [155] DRY MICROBURST 50              HIGH WINDS 66                 
+## [157] HIGH WINDS 76                  HIGH WINDS 63                 
+## [159] HIGH WINDS 67                  BLIZZARD/HEAVY SNOW           
+## [161] HEAVY SNOW/HIGH WINDS          BLOWING SNOW                  
+## [163] HIGH WINDS 82                  HIGH WINDS 80                 
+## [165] HIGH WINDS 58                  FREEZING DRIZZLE              
+## [167] LIGHTNING THUNDERSTORM WINDSS  DRY MICROBURST 58             
+## [169] HAIL 75                        HIGH WINDS 73                 
+## [171] HIGH WINDS 55                  LIGHT SNOW AND SLEET          
+## [173] URBAN FLOOD                    DRY MICROBURST 84             
+## [175] THUNDERSTORM WINDS 60          HEAVY RAIN/FLOODING           
+## [177] THUNDERSTORM WINDSS            TORNADOS                      
+## [179] GLAZE                          RECORD HEAT                   
+## [181] COASTAL FLOODING               HEAT WAVE                     
+## [183] FIRST SNOW                     FREEZING RAIN AND SLEET       
+## [185] UNSEASONABLY DRY               UNSEASONABLY WET              
+## [187] WINTRY MIX                     WINTER WEATHER                
+## [189] UNSEASONABLY COLD              EXTREME/RECORD COLD           
+## [191] RIP CURRENTS HEAVY SURF        SLEET/RAIN/SNOW               
+## [193] UNSEASONABLY WARM              DROUGHT                       
+## [195] NORMAL PRECIPITATION           HIGH WINDS/FLOODING           
+## [197] DRY                            RAIN/SNOW                     
+## [199] SNOW/RAIN/SLEET                WATERSPOUT/TORNADO            
+## [201] WATERSPOUTS                    WATERSPOUT TORNADO            
+## [203] URBAN/SMALL STREAM FLOOD       STORM SURGE                   
+## [205] WATERSPOUT-TORNADO             WATERSPOUT-                   
+## [207] TORNADOES, TSTM WIND, HAIL     TROPICAL STORM ALBERTO        
+## [209] TROPICAL STORM                 TROPICAL STORM GORDON         
+## [211] TROPICAL STORM JERRY           LIGHTNING THUNDERSTORM WINDS  
+## [213] WAYTERSPOUT                    MINOR FLOODING                
+## [215] LIGHTNING INJURY               URBAN/SMALL STREAM  FLOOD     
+## [217] LIGHTNING AND THUNDERSTORM WIN THUNDERSTORM WINDS53          
+## [219] URBAN AND SMALL STREAM FLOOD   URBAN AND SMALL STREAM        
+## [221] WILDFIRE                       DAMAGING FREEZE               
+## [223] THUNDERSTORM WINDS 13          SMALL HAIL                    
+## [225] HEAVY SNOW/HIGH WIND           HURRICANE                     
+## [227] WILD/FOREST FIRE               SMALL STREAM FLOODING         
+## [229] MUD SLIDE                      LIGNTNING                     
+## [231] FROST                          FREEZING RAIN/SNOW            
+## [233] HIGH WINDS/                    THUNDERSNOW                   
+## [235] FLOODS                         EXTREME WIND CHILLS           
+## [237] COOL AND WET                   HEAVY RAIN/SNOW               
+## [239] SMALL STREAM AND URBAN FLOODIN SMALL STREAM/URBAN FLOOD      
+## [241] SNOW/SLEET/FREEZING RAIN       SEVERE COLD                   
+## [243] GLAZE ICE                      COLD WAVE                     
+## [245] EARLY SNOW                     SMALL STREAM AND URBAN FLOOD  
+## [247] HIGH  WINDS                    RURAL FLOOD                   
+## [249] SMALL STREAM AND               MUD SLIDES                    
+## [251] HAIL 80                        EXTREME WIND CHILL            
+## [253] COLD AND WET CONDITIONS        EXCESSIVE WETNESS             
+## [255] GRADIENT WINDS                 HEAVY SNOW/BLOWING SNOW       
+## [257] SLEET/ICE STORM                THUNDERSTORM WINDS URBAN FLOOD
+## [259] THUNDERSTORM WINDS SMALL STREA ROTATING WALL CLOUD           
+## [261] LARGE WALL CLOUD               COLD AIR FUNNEL               
+## [263] GUSTNADO                       COLD AIR FUNNELS              
+## [265] BLOWING SNOW- EXTREME WIND CHI SNOW AND HEAVY SNOW           
+## [267] GROUND BLIZZARD                MAJOR FLOOD                   
+## [269] SNOW/HEAVY SNOW                FREEZING RAIN/SLEET           
+## [271] ICE JAM FLOODING               SNOW- HIGH WIND- WIND CHILL   
+## [273] STREET FLOOD                   COLD AIR TORNADO              
+## [275] SMALL STREAM FLOOD             FOG                           
+## [277] THUNDERSTORM WINDS 2           FUNNEL CLOUD/HAIL             
+## [279] ICE/SNOW                       TSTM WIND 51                  
+## [281] TSTM WIND 50                   TSTM WIND 52                  
+## [283] TSTM WIND 55                   HEAVY SNOW/BLIZZARD           
+## [285] THUNDERSTORM WINDS 61          HAIL 0.75                     
+## [287] THUNDERSTORM DAMAGE            THUNDERTORM WINDS             
+## [289] HAIL 1.00                      HAIL/WINDS                    
+## [291] SNOW AND ICE                   WIND STORM                    
+## [293] SNOWSTORM                      GRASS FIRES                   
+## [295] LAKE FLOOD                     PROLONG COLD                  
+## [297] HAIL/WIND                      HAIL 1.75                     
+## [299] THUNDERSTORMW 50               WIND/HAIL                     
+## [301] SNOW AND ICE STORM             URBAN AND SMALL STREAM FLOODIN
+## [303] THUNDERSTORMS WIND             THUNDERSTORM  WINDS           
+## [305] HEAVY SNOW/SLEET               AGRICULTURAL FREEZE           
+## [307] DROUGHT/EXCESSIVE HEAT         TUNDERSTORM WIND              
+## [309] TROPICAL STORM DEAN            THUNDERTSORM WIND             
+## [311] THUNDERSTORM WINDS/ HAIL       THUNDERSTORM WIND/LIGHTNING   
+## [313] HEAVY RAIN/SEVERE WEATHER      THUNDESTORM WINDS             
+## [315] WATERSPOUT/ TORNADO            LIGHTNING.                    
+## [317] WARM DRY CONDITIONS            HURRICANE-GENERATED SWELLS    
+## [319] HEAVY SNOW/ICE STORM           RIVER AND STREAM FLOOD        
+## [321] HIGH WIND 63                   COASTAL SURGE                 
+## [323] HEAVY SNOW AND ICE STORM       MINOR FLOOD                   
+## [325] HIGH WINDS/COASTAL FLOOD       RAIN                          
+## [327] RIVER FLOODING                 SNOW/RAIN                     
+## [329] ICE FLOES                      HIGH WAVES                    
+## [331] SNOW SQUALLS                   SNOW SQUALL                   
+## [333] THUNDERSTORM WIND G50          LIGHTNING FIRE                
+## [335] BLIZZARD/FREEZING RAIN         HEAVY LAKE SNOW               
+## [337] HEAVY SNOW/FREEZING RAIN       LAKE EFFECT SNOW              
+## [339] HEAVY WET SNOW                 DUST DEVIL WATERSPOUT         
+## [341] THUNDERSTORM WINDS/HEAVY RAIN  THUNDERSTROM WINDS            
+## [343] THUNDERSTORM WINDS      LE CEN HAIL 225                      
+## [345] BLIZZARD AND HEAVY SNOW        HEAVY SNOW AND ICE            
+## [347] ICE STORM AND SNOW             HEAVY SNOW ANDBLOWING SNOW    
+## [349] HEAVY SNOW/ICE                 BLIZZARD AND EXTREME WIND CHIL
+## [351] LOW WIND CHILL                 BLOWING SNOW &amp; EXTREME WIND CH
+## [353] WATERSPOUT/                    URBAN/SMALL STREAM            
+## [355] TORNADO F3                     FUNNEL CLOUD.                 
+## [357] TORNDAO                        HAIL 0.88                     
+## [359] FLOOD/RIVER FLOOD              MUD SLIDES URBAN FLOODING     
+## [361] TORNADO F1                     THUNDERSTORM WINDS G          
+## [363] DEEP HAIL                      GLAZE/ICE STORM               
+## [365] HEAVY SNOW/WINTER STORM        AVALANCE                      
+## [367] BLIZZARD/WINTER STORM          DUST STORM/HIGH WINDS         
+## [369] ICE JAM                        FOREST FIRES                  
+## [371] THUNDERSTORM WIND G60          FROST\\FREEZE                 
+## [373] THUNDERSTORM WINDS.            HAIL 88                       
+## [375] HAIL 175                       HVY RAIN                      
+## [377] HAIL 100                       HAIL 150                      
+## [379] HAIL 075                       THUNDERSTORM WIND G55         
+## [381] HAIL 125                       THUNDERSTORM WINDS G60        
+## [383] HARD FREEZE                    HAIL 200                      
+## [385] THUNDERSTORM WINDS FUNNEL CLOU THUNDERSTORM WINDS 62         
+## [387] WILDFIRES                      RECORD HEAT WAVE              
+## [389] HEAVY SNOW AND HIGH WINDS      HEAVY SNOW/HIGH WINDS &amp; FLOOD 
+## [391] HAIL FLOODING                  THUNDERSTORM WINDS/FLASH FLOOD
+## [393] HIGH WIND 70                   WET SNOW                      
+## [395] HEAVY RAIN AND FLOOD           LOCAL FLASH FLOOD             
+## [397] THUNDERSTORM WINDS 53          FLOOD/FLASH FLOODING          
+## [399] TORNADO/WATERSPOUT             RAIN AND WIND                 
+## [401] THUNDERSTORM WIND 59           THUNDERSTORM WIND 52          
+## [403] COASTAL/TIDAL FLOOD            SNOW/ICE STORM                
+## [405] BELOW NORMAL PRECIPITATION     RIP CURRENTS/HEAVY SURF       
+## [407] FLASH FLOOD/FLOOD              EXCESSIVE RAIN                
+## [409] RECORD/EXCESSIVE HEAT          HEAT WAVES                    
+## [411] LIGHT SNOW                     THUNDERSTORM WIND 69          
+## [413] HAIL DAMAGE                    LIGHTNING DAMAGE              
+## [415] RECORD TEMPERATURES            LIGHTNING AND WINDS           
+## [417] FOG AND COLD TEMPERATURES      OTHER                         
+## [419] RECORD SNOW                    SNOW/COLD                     
+## [421] FLASH FLOOD FROM ICE JAMS      TSTM WIND G58                 
+## [423] MUDSLIDE                       HEAVY SNOW SQUALLS            
+## [425] HEAVY SNOW/SQUALLS             HEAVY SNOW-SQUALLS            
+## [427] ICY ROADS                      HEAVY MIX                     
+## [429] SNOW FREEZING RAIN             LACK OF SNOW                  
+## [431] SNOW/SLEET                     SNOW/FREEZING RAIN            
+## [433] SNOW DROUGHT                   THUNDERSTORMW WINDS           
+## [435] THUNDERSTORM WIND 60 MPH       THUNDERSTORM WIND 65MPH       
+## [437] THUNDERSTORM WIND/ TREES       THUNDERSTORM WIND/AWNING      
+## [439] THUNDERSTORM WIND 98 MPH       THUNDERSTORM WIND TREES       
+## [441] TORRENTIAL RAIN                TORNADO F2                    
+## [443] RIP CURRENTS                   HURRICANE EMILY               
+## [445] HURRICANE GORDON               HURRICANE FELIX               
+## [447] THUNDERSTORM WIND 59 MPH       THUNDERSTORM WINDS 63 MPH     
+## [449] THUNDERSTORM WIND/ TREE        THUNDERSTORM DAMAGE TO        
+## [451] THUNDERSTORM WIND 65 MPH       FLASH FLOOD - HEAVY RAIN      
+## [453] THUNDERSTORM WIND.             FLASH FLOOD/ STREET           
+## [455] THUNDERSTORM WIND 59 MPH.      HEAVY SNOW   FREEZING RAIN    
+## [457] DAM FAILURE                    THUNDERSTORM HAIL             
+## [459] HAIL 088                       THUNDERSTORM WINDSHAIL        
+## [461] LIGHTNING  WAUSEON             THUDERSTORM WINDS             
+## [463] ICE AND SNOW                   RECORD COLD/FROST             
+## [465] STORM FORCE WINDS              FREEZING RAIN AND SNOW        
+## [467] FREEZING RAIN SLEET AND        SOUTHEAST                     
+## [469] HEAVY SNOW &amp; ICE               FREEZING DRIZZLE AND FREEZING 
+## [471] THUNDERSTORM WINDS AND         HAIL/ICY ROADS                
+## [473] FLASH FLOOD/HEAVY RAIN         HEAVY RAIN; URBAN FLOOD WINDS;
+## [475] HEAVY PRECIPITATION            TSTM WIND DAMAGE              
+## [477] HIGH WATER                     FLOOD FLASH                   
+## [479] RAIN/WIND                      THUNDERSTORM WINDS 50         
+## [481] THUNDERSTORM WIND G52          FLOOD FLOOD/FLASH             
+## [483] THUNDERSTORM WINDS 52          SNOW SHOWERS                  
+## [485] THUNDERSTORM WIND G51          HEAT WAVE DROUGHT             
+## [487] HEAVY SNOW/BLIZZARD/AVALANCHE  RECORD SNOW/COLD              
+## [489] WET WEATHER                    UNSEASONABLY WARM AND DRY     
+## [491] FREEZING RAIN SLEET AND LIGHT  RECORD/EXCESSIVE RAINFALL     
+## [493] TIDAL FLOOD                    BEACH EROSIN                  
+## [495] THUNDERSTORM WIND G61          FLOOD/FLASH                   
+## [497] LOW TEMPERATURE                SLEET &amp; FREEZING RAIN         
+## [499] HEAVY RAINS/FLOODING           THUNDERESTORM WINDS           
+## [501] THUNDERSTORM WINDS/FLOODING    THUNDEERSTORM WINDS           
+## [503] HIGHWAY FLOODING               THUNDERSTORM W INDS           
+## [505] HYPOTHERMIA                    FLASH FLOOD/ FLOOD            
+## [507] THUNDERSTORM WIND 50           THUNERSTORM WINDS             
+## [509] HEAVY RAIN/MUDSLIDES/FLOOD     MUD/ROCK SLIDE                
+## [511] HIGH WINDS/COLD                BEACH EROSION/COASTAL FLOOD   
+## [513] COLD/WINDS                     SNOW/ BITTER COLD             
+## [515] THUNDERSTORM WIND 56           SNOW SLEET                    
+## [517] DRY HOT WEATHER                COLD WEATHER                  
+## [519] RAPIDLY RISING WATER           HAIL ALOFT                    
+## [521] EARLY FREEZE                   ICE/STRONG WINDS              
+## [523] EXTREME WIND CHILL/BLOWING SNO SNOW/HIGH WINDS               
+## [525] HIGH WINDS/SNOW                EARLY FROST                   
+## [527] SNOWMELT FLOODING              HEAVY SNOW AND STRONG WINDS   
+## [529] SNOW ACCUMULATION              BLOWING SNOW/EXTREME WIND CHIL
+## [531] SNOW/ ICE                      SNOW/BLOWING SNOW             
+## [533] TORNADOES                      THUNDERSTORM WIND/HAIL        
+## [535] FLASH FLOODING/FLOOD           HAIL 275                      
+## [537] HAIL 450                       FLASH FLOOODING               
+## [539] EXCESSIVE RAINFALL             THUNDERSTORMW                 
+## [541] HAILSTORM                      TSTM WINDS                    
+## [543] BEACH FLOOD                    HAILSTORMS                    
+## [545] TSTMW                          FUNNELS                       
+## [547] TSTM WIND 65)                  THUNDERSTORM WINDS/ FLOOD     
+## [549] HEAVY RAINFALL                 HEAT/DROUGHT                  
+## [551] HEAT DROUGHT                   NEAR RECORD SNOW              
+## [553] LANDSLIDE                      HIGH WIND AND SEAS            
+## [555] THUNDERSTORMWINDS              THUNDERSTORM WINDS HEAVY RAIN 
+## [557] SLEET/SNOW                     EXCESSIVE                     
+## [559] SNOW/SLEET/RAIN                WILD/FOREST FIRES             
+## [561] HEAVY SEAS                     DUSTSTORM                     
+## [563] FLOOD &amp; HEAVY RAIN             ?                             
+## [565] THUNDERSTROM WIND              FLOOD/FLASHFLOOD              
+## [567] SNOW AND COLD                  HOT PATTERN                   
+## [569] PROLONG COLD/SNOW              BRUSH FIRES                   
+## [571] SNOW\\COLD                     WINTER MIX                    
+## [573] EXCESSIVE PRECIPITATION        SNOWFALL RECORD               
+## [575] HOT/DRY PATTERN                DRY PATTERN                   
+## [577] MILD/DRY PATTERN               MILD PATTERN                  
+## [579] LANDSLIDES                     HEAVY SHOWERS                 
+## [581] HEAVY SNOW AND                 HIGH WIND 48                  
+## [583] LAKE-EFFECT SNOW               BRUSH FIRE                    
+## [585] WATERSPOUT FUNNEL CLOUD        URBAN SMALL STREAM FLOOD      
+## [587] SAHARAN DUST                   HEAVY SHOWER                  
+## [589] URBAN FLOOD LANDSLIDE          HEAVY SWELLS                  
+## [591] URBAN SMALL                    URBAN FLOODS                  
+## [593] SMALL STREAM                   HEAVY RAIN/URBAN FLOOD        
+## [595] FLASH FLOOD/LANDSLIDE          LANDSLIDE/URBAN FLOOD         
+## [597] HEAVY RAIN/SMALL STREAM URBAN  FLASH FLOOD LANDSLIDES        
+## [599] EXTREME WINDCHILL              URBAN/SML STREAM FLD          
+## [601] TSTM WIND/HAIL                 Other                         
+## [603] Record dry month               Temperature record            
+## [605] Minor Flooding                 Ice jam flood (minor          
+## [607] High Wind                      Tstm Wind                     
+## [609] ROUGH SURF                     Wind                          
+## [611] Heavy Surf                     Dust Devil                    
+## [613] Wind Damage                    Marine Accident               
+## [615] Snow                           Freeze                        
+## [617] Snow Squalls                   Coastal Flooding              
+## [619] Heavy Rain                     Strong Wind                   
+## [621] COASTAL STORM                  COASTALFLOOD                  
+## [623] Erosion/Cstl Flood             Heavy Rain and Wind           
+## [625] Light Snow/Flurries            Wet Month                     
+## [627] Wet Year                       Tidal Flooding                
+## [629] River Flooding                 Damaging Freeze               
+## [631] Beach Erosion                  Hot and Dry                   
+## [633] Flood/Flash Flood              Icy Roads                     
+## [635] High Surf                      Heavy Rain/High Surf          
+## [637] Thunderstorm Wind              Rain Damage                   
+## [639] Unseasonable Cold              Early Frost                   
+## [641] Wintry Mix                     blowing snow                  
+## [643] STREET FLOODING                Record Cold                   
+## [645] Extreme Cold                   Ice Fog                       
+## [647] Excessive Cold                 Torrential Rainfall           
+## [649] Freezing Rain                  Landslump                     
+## [651] Late-season Snowfall           Hurricane Edouard             
+## [653] Coastal Storm                  Flood                         
+## [655] HEAVY RAIN/WIND                TIDAL FLOODING                
+## [657] Winter Weather                 Snow squalls                  
+## [659] Strong Winds                   Strong winds                  
+## [661] RECORD WARM TEMPS.             Ice/Snow                      
+## [663] Mudslide                       Glaze                         
+## [665] Extended Cold                  Snow Accumulation             
+## [667] Freezing Fog                   Drifting Snow                 
+## [669] Whirlwind                      Heavy snow shower             
+## [671] Heavy rain                     LATE SNOW                     
+## [673] Record May Snow                Record Winter Snow            
+## [675] Heavy Precipitation             COASTAL FLOOD                
+## [677] Record temperature             Light snow                    
+## [679] Late Season Snowfall           Gusty Wind                    
+## [681] small hail                     Light Snow                    
+## [683] MIXED PRECIP                   Black Ice                     
+## [685] Mudslides                      Gradient wind                 
+## [687] Snow and Ice                   Freezing Spray                
+## [689] Summary Jan 17                 Summary of March 14           
+## [691] Summary of March 23            Summary of March 24           
+## [693] Summary of April 3rd           Summary of April 12           
+## [695] Summary of April 13            Summary of April 21           
+## [697] Summary August 11              Summary of April 27           
+## [699] Summary of May 9-10            Summary of May 10             
+## [701] Summary of May 13              Summary of May 14             
+## [703] Summary of May 22 am           Summary of May 22 pm          
+## [705] Heatburst                      Summary of May 26 am          
+## [707] Summary of May 26 pm           Metro Storm, May 26           
+## [709] Summary of May 31 am           Summary of May 31 pm          
+## [711] Summary of June 3              Summary of June 4             
+## [713] Summary June 5-6               Summary June 6                
+## [715] Summary of June 11             Summary of June 12            
+## [717] Summary of June 13             Summary of June 15            
+## [719] Summary of June 16             Summary June 18-19            
+## [721] Summary of June 23             Summary of June 24            
+## [723] Summary of June 30             Summary of July 2             
+## [725] Summary of July 3              Summary of July 11            
+## [727] Summary of July 22             Summary July 23-24            
+## [729] Summary of July 26             Summary of July 29            
+## [731] Summary of August 1            Summary August 2-3            
+## [733] Summary August 7               Summary August 9              
+## [735] Summary August 10              Summary August 17             
+## [737] Summary August 21              Summary August 28             
+## [739] Summary September 4            Summary September 20          
+## [741] Summary September 23           Summary Sept. 25-26           
+## [743] Summary: Oct. 20-21            Summary: October 31           
+## [745] Summary: Nov. 6-7              Summary: Nov. 16              
+## [747] Microburst                     wet micoburst                 
+## [749] Hail(0.75)                     Funnel Cloud                  
+## [751] Urban Flooding                 No Severe Weather             
+## [753] Urban flood                    Urban Flood                   
+## [755] Cold                           Summary of May 22             
+## [757] Summary of June 6              Summary August 4              
+## [759] Summary of June 10             Summary of June 18            
+## [761] Summary September 3            Summary: Sept. 18             
+## [763] Coastal Flood                  coastal flooding              
+## [765] Small Hail                     Record Temperatures           
+## [767] Light Snowfall                 Freezing Drizzle              
+## [769] Gusty wind/rain                GUSTY WIND/HVY RAIN           
+## [771] Blowing Snow                   Early snowfall                
+## [773] Monthly Snowfall               Record Heat                   
+## [775] Seasonal Snowfall              Monthly Rainfall              
+## [777] Cold Temperature               Sml Stream Fld                
+## [779] Heat Wave                      MUDSLIDE/LANDSLIDE            
+## [781] Saharan Dust                   Volcanic Ash                  
+## [783] Volcanic Ash Plume             Thundersnow shower            
+## [785] NONE                           COLD AND SNOW                 
+## [787] DAM BREAK                      TSTM WIND (G45)               
+## [789] SLEET/FREEZING RAIN            BLACK ICE                     
+## [791] BLOW-OUT TIDES                 UNSEASONABLY COOL             
+## [793] TSTM HEAVY RAIN                Gusty Winds                   
+## [795] GUSTY WIND                     TSTM WIND 40                  
+## [797] TSTM WIND 45                   TSTM WIND (41)                
+## [799] TSTM WIND (G40)                TSTM WND                      
+## [801] Wintry mix                      TSTM WIND                    
+## [803] Frost                          Frost/Freeze                  
+## [805] RAIN (HEAVY)                   Record Warmth                 
+## [807] Prolong Cold                   Cold and Frost                
+## [809] URBAN/SML STREAM FLDG          STRONG WIND GUST              
+## [811] LATE FREEZE                    BLOW-OUT TIDE                 
+## [813] Hypothermia/Exposure           HYPOTHERMIA/EXPOSURE          
+## [815] Lake Effect Snow               Mixed Precipitation           
+## [817] Record High                    COASTALSTORM                  
+## [819] Snow and sleet                 Freezing rain                 
+## [821] Gusty winds                    Blizzard Summary              
+## [823] SUMMARY OF MARCH 24-25         SUMMARY OF MARCH 27           
+## [825] SUMMARY OF MARCH 29            GRADIENT WIND                 
+## [827] Icestorm/Blizzard              Flood/Strong Wind             
+## [829] TSTM WIND AND LIGHTNING        gradient wind                 
+## [831] Freezing drizzle               Mountain Snows                
+## [833] URBAN/SMALL STRM FLDG          Heavy surf and wind           
+## [835] Mild and Dry Pattern           COLD AND FROST                
+## [837] TYPHOON                        HIGH SWELLS                   
+## [839] HIGH  SWELLS                   VOLCANIC ASH                  
+## [841] DRY SPELL                       LIGHTNING                    
+## [843] BEACH EROSION                  UNSEASONAL RAIN               
+## [845] EARLY RAIN                     PROLONGED RAIN                
+## [847] WINTERY MIX                    COASTAL FLOODING/EROSION      
+## [849] HOT SPELL                      UNSEASONABLY HOT              
+## [851]  TSTM WIND (G45)               TSTM WIND  (G45)              
+## [853] HIGH WIND (G40)                TSTM WIND (G35)               
+## [855] DRY WEATHER                    ABNORMAL WARMTH               
+## [857] UNUSUAL WARMTH                 WAKE LOW WIND                 
+## [859] MONTHLY RAINFALL               COLD TEMPERATURES             
+## [861] COLD WIND CHILL TEMPERATURES   MODERATE SNOW                 
+## [863] MODERATE SNOWFALL              URBAN/STREET FLOODING         
+## [865] COASTAL EROSION                UNUSUAL/RECORD WARMTH         
+## [867] BITTER WIND CHILL              BITTER WIND CHILL TEMPERATURES
+## [869] SEICHE                         TSTM                          
+## [871] COASTAL  FLOODING/EROSION      UNSEASONABLY WARM YEAR        
+## [873] HYPERTHERMIA/EXPOSURE          ROCK SLIDE                    
+## [875] ICE PELLETS                    PATCHY DENSE FOG              
+## [877] RECORD COOL                    RECORD WARM                   
+## [879] HOT WEATHER                    RECORD TEMPERATURE            
+## [881] TROPICAL DEPRESSION            VOLCANIC ERUPTION             
+## [883] COOL SPELL                     WIND ADVISORY                 
+## [885] GUSTY WIND/HAIL                RED FLAG FIRE WX              
+## [887] FIRST FROST                    EXCESSIVELY DRY               
+## [889] SNOW AND SLEET                 LIGHT SNOW/FREEZING PRECIP    
+## [891] VOG                            MONTHLY PRECIPITATION         
+## [893] MONTHLY TEMPERATURE            RECORD DRYNESS                
+## [895] EXTREME WINDCHILL TEMPERATURES MIXED PRECIPITATION           
+## [897] DRY CONDITIONS                 REMNANTS OF FLOYD             
+## [899] EARLY SNOWFALL                 FREEZING FOG                  
+## [901] LANDSPOUT                      DRIEST MONTH                  
+## [903] RECORD  COLD                   LATE SEASON HAIL              
+## [905] EXCESSIVE SNOW                 DRYNESS                       
+## [907] FLOOD/FLASH/FLOOD              WIND AND WAVE                 
+## [909] LIGHT FREEZING RAIN             WIND                         
+## [911] MONTHLY SNOWFALL               RECORD PRECIPITATION          
+## [913] ICE ROADS                      ROUGH SEAS                    
+## [915] UNSEASONABLY WARM/WET          UNSEASONABLY COOL &amp; WET       
+## [917] UNUSUALLY WARM                 TSTM WIND G45                 
+## [919] NON SEVERE HAIL                NON-SEVERE WIND DAMAGE        
+## [921] UNUSUALLY COLD                 WARM WEATHER                  
+## [923] LANDSLUMP                      THUNDERSTORM WIND (G40)       
+## [925] UNSEASONABLY WARM &amp; WET         FLASH FLOOD                  
+## [927] LOCALLY HEAVY RAIN             WIND GUSTS                    
+## [929] UNSEASONAL LOW TEMP            HIGH SURF ADVISORY            
+## [931] LATE SEASON SNOW               GUSTY LAKE WIND               
+## [933] ABNORMALLY DRY                 WINTER WEATHER MIX            
+## [935] RED FLAG CRITERIA              WND                           
+## [937] CSTL FLOODING/EROSION          SMOKE                         
+## [939]  WATERSPOUT                    SNOW ADVISORY                 
+## [941] EXTREMELY WET                  UNUSUALLY LATE SNOW           
+## [943] VERY DRY                       RECORD LOW RAINFALL           
+## [945] ROGUE WAVE                     PROLONG WARMTH                
+## [947] ACCUMULATED SNOWFALL           FALLING SNOW/ICE              
+## [949] DUST DEVEL                     NON-TSTM WIND                 
+## [951] NON TSTM WIND                  GUSTY THUNDERSTORM WINDS      
+## [953] PATCHY ICE                     HEAVY RAIN EFFECTS            
+## [955] EXCESSIVE HEAT/DROUGHT         NORTHERN LIGHTS               
+## [957] MARINE TSTM WIND                  HIGH SURF ADVISORY         
+## [959] HAZARDOUS SURF                 FROST/FREEZE                  
+## [961] WINTER WEATHER/MIX             ASTRONOMICAL HIGH TIDE        
+## [963] WHIRLWIND                      VERY WARM                     
+## [965] ABNORMALLY WET                 TORNADO DEBRIS                
+## [967] EXTREME COLD/WIND CHILL        ICE ON ROAD                   
+## [969] DROWNING                       GUSTY THUNDERSTORM WIND       
+## [971] MARINE HAIL                    HIGH SURF ADVISORIES          
+## [973] HURRICANE/TYPHOON              HEAVY SURF/HIGH SURF          
+## [975] SLEET STORM                    STORM SURGE/TIDE              
+## [977] COLD/WIND CHILL                MARINE HIGH WIND              
+## [979] TSUNAMI                        DENSE SMOKE                   
+## [981] LAKESHORE FLOOD                MARINE THUNDERSTORM WIND      
+## [983] MARINE STRONG WIND             ASTRONOMICAL LOW TIDE         
+## [985] VOLCANIC ASHFALL              
+## 985 Levels: ? ABNORMALLY DRY ABNORMALLY WET ... WND</code></pre>
 <p>Looking at these unique entries also raises some questions about the cleanliness of this data. For example, <code>TSTM WIND</code> represents the same thing as <code>THUNDERSTORM WIND</code> which is the same as <code>THUNDERSTORM WINDS</code>, etc. In summary, our data is not clean and not tidy. However, because this project is not designed to test how well one can clean and tidy data, so I’ll just walk through a few quick proceedures to tidy things up a bit.</p>
 <p>The documentation for this data, <a href="https://d396qusza40orc.cloudfront.net/repdata%2Fpeer2_doc%2Fpd01016005curr.pdf">Storm Data Documentation</a> only lists 48 different event types (see Table 1 on Page 6). I couldn’t find a tablular form of this data so I copy/pasted Table 1 into a text file <code>EVTYPE.txt</code> and read it in using <code>read.delim</code> specifying a new line as the deliminator.</p>
 <pre class="r"><code>EVTYPE &lt;- read.delim('EVTYPE.txt', header=FALSE, sep = &quot;\n&quot;)</code></pre>
@@ -174,6 +668,23 @@ evtypeMatch &lt;- function(X){
 } 
 
 df &lt;- mutate(df,EVTYPE = sapply(df$EVTYPE,evtypeMatch))</code></pre>
+<p>Next, we note that the values in <code>PROPDMG</code> and <code>CROPDMG</code> need to be adjusted by orders of magnitude according the entries in <code>PROPDMPEXP</code> and <code>CROPDMPEXP</code> repsectively. The valid values are “K” for thousands, “M” for millions, and “B” for billions. We will add a new variable which maps the alphabetical code to a numerical magnitude, then mutate the variables.</p>
+<pre class="r"><code>magnitude &lt;- data.frame(ALPHA=c(&quot;K&quot;, &quot;M&quot;,&quot;B&quot;), MAG=c(1e3,1e6,1e9))</code></pre>
+<pre class="r"><code>df &lt;- df %&gt;% 
+       mutate(CROPDMGEXP=toupper(CROPDMGEXP)) %&gt;%
+       mutate(PROPDMGEXP=toupper(PROPDMGEXP))
+
+df &lt;- left_join(x=df,y=magnitude,by=c('CROPDMGEXP'='ALPHA')) %&gt;%
+        mutate(CROPDMG=CROPDMG*MAG.y) %&gt;%
+        select(-MAG.y) %&gt;%
+        left_join(x=df,y=magnitude,by=c('PROPDMGEXP'='ALPHA')) %&gt;%
+        mutate(PROPDMG=PROPDMG*MAG.y) %&gt;%
+        select(-MAG.y)</code></pre>
+<pre><code>## Warning in left_join_impl(x, y, by$x, by$y, suffix$x, suffix$y): joining
+## factor and character vector, coercing into character vector
+
+## Warning in left_join_impl(x, y, by$x, by$y, suffix$x, suffix$y): joining
+## factor and character vector, coercing into character vector</code></pre>
 </div>
 </div>
 <div id="results" class="section level2">
@@ -197,17 +708,31 @@ g.health + geom_point()</code></pre>
 </div>
 <div id="economic-consequences" class="section level3">
 <h3>Economic Consequences</h3>
-<p>We measure economic consequences as the sum of property damage (<code>PROPDMG</code>), crop damage (<code>CROPDMG</code>). It’s important to note the expression (<code>*EXP</code>) for these two variables, which provide the order of magnitude of the value. The valid values are “K” for thousands, “M” for millions, and “B” for billions.</p>
-<pre class="r"><code>econ_df &lt;-   df %&gt;% 
-             select(EVTYPE,PROPDMG,CROPDMG,PROPDMGEXP,CROPDMGEXP) %&gt;%
-             mutate(DMG = PROPDMG +CROPDMG) %&gt;%
-             group_by(EVTYPE) %&gt;%
-             summarize(TOTAL_DMG = sum(DMG)) %&gt;%
-             filter(TOTAL_DMG &gt; 1e6)</code></pre>
+<p>We measure economic consequences as the sum of property damage (<code>PROPDMG</code>), crop damage (<code>CROPDMG</code>). Since we were not able to determine the magnitude of a number of entries we will have to remove the NA values as well.</p>
+<pre class="r"><code>econ_df &lt;- df %&gt;% 
+           select(EVTYPE,PROPDMG,CROPDMG) %&gt;%
+           mutate(DMG = PROPDMG+CROPDMG) %&gt;%
+           group_by(EVTYPE) %&gt;%
+           summarize(TOTAL_DMG = sum(DMG, na.rm=TRUE ))
+           
+head(econ_df)</code></pre>
+<pre><code>## # A tibble: 6 × 2
+##                  EVTYPE TOTAL_DMG
+##                   &lt;chr&gt;     &lt;dbl&gt;
+## 1 Astronomical Low Tide   9745000
+## 2             Avalanche   3721800
+## 3              Blizzard 659334122
+## 4         Coastal Flood 520276679
+## 5       Cold/Wind Chill   2315100
+## 6           Debris Flow  56050000</code></pre>
 <p>Then we plot it. It looks like</p>
-<pre class="r"><code>g.econ &lt;- ggplot(econ_df, aes(x = EVTYPE, y=TOTAL_DMG))
+<pre class="r"><code>g.econ &lt;- ggplot(econ_df, aes(x = EVTYPE, y=TOTAL_DMG, rm.na=TRUE ))
 g.econ + geom_point()</code></pre>
-<p><img src="data:image/png;base64,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QkADCKgBARUhoCoENICAGhBQEQKqQkADCKgBARUhoCoENICAGhBQEQKqQkADCKgBARUhoCoENICAGhBQEQKqQkADCKgBARUhoCoENICAGhBQEQKqQkADCKgBARUhoCoENICAGhBQEQKqQkADCKgBARUhoCoENICAGhBQEQKqQkADCKgBARUhoCoENICAGhBQEQKqQkADCKgBARUhoCoENICAGhBQEQKqQkADCKgBARUhoCoENICAGhBQEQKqQkADCKgBARUhoCoENICAGhBQEQKqQkADCKgBARUhoCoENICAGhBQEQKqQkADCKgBARUhoCoENICAGhBQEQKqQkADCKgBARUhoCoENICAGhBQEQKqQkADCKgBARUhoCoENICAGhBQEQKqQkADCKgBARUhoCoENICAGhBQEQKqQkADCKgBARUhoCoENICAGhBQEQKqQkADCKgBARUhoCoENICAGhBQEQKqQkADCKgBARUhoCoENICAGhBQEQKqQkADCKgBARUhoCoENICAGhBQEQKqQkADCKgBARUhoCoENICAGhBQEQKqQkADCKgBARUhoCoENICAGhBQEQKqQkADCKgBARUhoCoENICAGhBQEQKqQkADCKgBARUhoCoENICAGhBQEQKqQkADCKgBARUhoCoENICAGhBQEQKqQkADCKgBARUhoCoENICAGhBQEQKqQkADCKgBARUhoCoENICAGhBQEQKqQkADCKgBARUhoCoENICAGhBQEQKqQkADCKgBARUhoCoENICAGhBQEQKqQkADCKgBARUhoCoENICAGhBQEQKqQkADCKgBARUhoCoENICAGhBQEQKqQkADCKgBARUhoCoENICAGhBQEQKqUuaArjn705MPmf9o7fjmwX+9Lx2t+/qMiQct3FS/WMyAgEYhoCIEVKXEAb1vinP7dbnua9LBIjfgsepg7QznJjt36AYfOSCgcQioCAFVKW9Aew92pz7vN13suh+tjuY3BnSem/t45ZGZ7jwfOSCgcQioCAFVKW9AF7sZvenhGW5+9b9H1MpZt6570tPVgxVuak/cgIBGIqAiBFSlvAG9wC2qHf7SHeJ9Za+u3qFzrnYn1Q7nuqVxAwIaiYCKEFCV8gb0eHdb7fAxN8n79W7W8Dnz3FW1w0vcgrgBAY1EQEUIqEp5A/ro8vor5ovdbO8fcl/82Rdnn/Ct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" width="672" /></p>
+<p><img src="data:image/png;base64,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mDUIqEBAvRBQzJg1CKhAQL0QUMyYNQioQEC9EFDMmDUIqEBAvRBQzJg1CKhAQL0QUMyYNQioQEC9EFDMmDUIqEBAvRBQzJg1CKhAQL0QUMyYNQioQEC9EFDMmDUIqEBAvRBQzJg1CKhAQL0QUMyYNQioQEC9EFDMmDUIqEBAvRBQzJg1CKhAQL0QUMyYNQioQEC9EFDMmDUIqEBAvRBQzJg1CKhAQL0QUMyYNQioQEC9EFDMmDUIqEBAvRBQzJg1CKhAQL0QUMyYNQioQEC9EFDMmDUIqEBAvRBQzJg1CKhAQL0QUMyYNQioQEC9EFDMmDUIqEBAvRBQzJg1CKhAQL0QUMyYNQioQEC9EFDMmDUIqEBAvRBQzJg1CKhAQL0QUMyYNQioQEC9EFDMmDUIqEBAvRBQzJg1CKhAQL0QUMyYNQioQEC9EFDMmDUIqEBAvRBQzJg1CKhAQL0QUMyYNQioQEC9EFDMmDUIqEBAvRBQzJg1CKhAQL0QUMyYNQioQEC9EFDMmDUIqEBAvRBQzJg1CKhAQL0QUMyYNQioQEC9EFDMmDUIqEBAvRBQzJg1CKhAQL0QUMyYNQioQEC9EFDMmDUIqEBAvRBQzJg1CKhAQL0QUMyYNQioQEC9EFDMmDUIqEBAvRBQzJg1CKhAQL0QUMyYNQioQEC9EFDMmDUIqEBAvRBQzJg1CKhAQL0QUMyYNQioQEC9EFDMmDUIqEBAvRBQzJg1CKhAQL0QUMyYNQioQEC9EFDMmDUIqEBAvRBQzJg1CKhAQL0QUMyYNQioQEC9EFDMmDUIqEBAvRBQzJg1CKhAQL0QUMyYNQioQEC9EFDMmDUIqEBAvRBQzJg1CKhAQL0QUMyYNQioQEC9EFDMmDUIqEBAvRBQzJg1CKhAQL0QUMyYNQioQEC9EFDMmDUIqEBAvRBQzJg1CKhAQL0QUMyYNQioQEC9EFDMmDUIqEBAvRBQzJg1CKhAQL0QUMyYNQioQEC9EFDMmDUIqEBAvRBQzJg1CKhAQL0QUMyYNQioQEC9EFDMmDUIqEBAvRBQzJg1CKhAQL0QUMyYNQioQEC9EFDMmDUIqEBAvRBQzJg1CKhAQL0QUMyYNQioQEC9EFDMmDUIqEBAvRBQzJg1CKhAQL0QUMyYNQioQEC9EFDMmDUIqEBAvRBQzJg1CKhAQL0QUMyYNQioQEC9EFDM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FQioFwKKGbMGARUIqBcCihmzBgEVCKgXAooZswYBFQioFwKKGbMGARUIqBcCihmzBgEVCKgXAooZswYBFQioFwKKGbMGARUIqBcCihmzBgEVCKgXAooZswYBFQioFwKKGbMGARUIqBcCihmzBgEVCKgXAooZswYBFQioFwKKGbMGARUIqBcCihmzBgEVCKgXAooZswYBFQioFwKKGbMGARUIqBcCihmzBgEVCKgXAooZswYBFQioFwKKGbMGARUIqBcCihmzBgEVCKgXAooZswYBFQioFwKKGbMGARUIqBcCihmzBgEVCKgXAooZswYBFQioFwKKGbMGARUIqBcCihmzBgEVCKgXAooZswYBFQioFwKKGbMGARUIqBcCihmzBgEVCKgXAooZswYBFQioFwKKGbMGARUIqBcCihmzBgEVCKgXAooZswYBFQioFwKKGbMGARUIqBcCihmzBgEVCKgXAooZswYBFQioFwKKGbMGARUIqBcCihmzBgEVCKgXAooZswYBFQioFwKKGbMGARUIqBcCihmzBgEVCKgXAooZswYBFQioFwKKGbMGARUIqBcCihmzBgEVCKgXAooZswYBFQioFwKKGbMGARUIqBcCihmzBgEVCKgXAooZswYBFQioFwKKGbMGARUIqBcCihmzBgEVCKgXAooZswYBFQioFwKKGbMGARUIqBcCihmzBgEVCKgXAooZswYBFQioFwKKGbMGARUIqBcCihmzBgEVCKgXAooZswYBFQioFwKKGbMGARUIqBcCihmzBgEVCKgXAooZswYBFQioFwKKGbMGARUIqBcCihmzBgEVCKgXAooZswYBFQioFwKKGbMGARUIqBcCihmzBgEVCKgXAooZswYBFQioFwKKGbMGARUIqBcCihmzBgEVCKgXAooZswYBFQioFwKKGbMGARUIqBcCihmzBgEVCKgXAooZswYBFQioFwKKGbMGARUIqBcCihmzBgEVCKgXAooZswYBFQioFwKKGbMGARUIqBcCihmzBgEVCKgXAooZswYBFQioFwKKGbMGARUIqBcCihmzBgEVCKgXAooZswYBFQioFwKKGbMGARUIqBcCihmzBgEVCKgXAooZswYBFQioFwKKGbMGARUIqBcCihmzBgEVCKgXAooZswYBFQioFwKKGbMGARUIqBcCihmzBgEVCKgXAooZswYBFQioFwKKGbMGARUIqBcCihmzBgEVCKgXAooZswYBFQioFwKKGbMGARUIqBcCihmzBgEVCKgXAooZswYBFQioFwKKGbMGARUIqJd1cd4Jgo3rFNYHwRZtfN3mIFivjdvdfpM6Q2vKiBlzds0bMEdsqLk5lansBvSdzTG22NXbrBEEreq43X7q+BbfDIF/BsyYM2ZWZ8BcC3MqU9kNKA/hMWPW4CG8wEN4LwQUM2YNAioQUC8EFDNmDQIqEFAvBBQzZg0CKhBQLwQUM2YNAioQUC8EFDNmDQIqEFAvBBQzZg0CKhBQLwS0UuZ/3XHrozvG3B23NgHdDjMBrRwEtDLm2/9vj1wu99lzam/ujlubgG6XmYBWDgJaEfOc3XIRI2ptbumGW7smZgIqEFAvBLQS5kW754qcXVuzo7tt7dqYCahAQL0Q0EqY9y31M/fZ2pod3W1r18ZMQAUC6oWAVsL8KQlo7v6amh3dbWvXxkxABQLqhYBWwLxi11hAr62lOaSbbe0amQmoQEC9ENBKmN8dC+jNNTU7utvWro2ZgAoE1AsBrYT5a9LPnZ6qqdnR3bZ2bcwEVCCgXghoJczHSEB/VFuzo7tt7dqYCahAQL0Q0EqYX/pMsZ+731Fbs6O7be3amAmoQEC9ENCKmB/4fNTP91xWa3NLN9zaNTETUIGAeiGglTG/dOI+797tCwc8Untzd9zaBHS7zAS0chBQzJg1CKhAQL0QUMyYNQioQEC9EFDMmDUIqEBAvRBQzJg1CKhAQL0QUMyYNQioQEC9EFDMmDUIqEBAvRBQzJg1CKhAQL0QUMyYNQioQEC9EFDMmDUIqEBAvRBQzJg1CKhAQL0QUMyYNQioQEC9EFDMmDUIqEBAvRBQzJg1CKhAQL0QUMyYNQioQEC9EFDMmDUIqEBAvRBQzJg1CKhAQL0QUMyYNQioQEC9EFDMmDUIqEBAvRBQzJg1CKhAQL0QUMyYNQioQEC9EFDMmDUIqEBAvRBQzJg1CKhAQL0Q0M5vfuPZxSt2jLkrb20CKhBQLwS0s5sf6rdXLrfLj66vvblrb20CKhBQLwS0k5tvfF8uZKdja21u6dpbm4AKBNQLAe3c5sXvzxXocVltzY6uvLUJqEBAvRDQzm0+KFfiK7U1O7ry1iagAgH1QkA7t/nzEtDcQzU1O7ry1iagAgH1QkA7t3n3WECvq6nZ0ZW3NgEVCKgXAtq5ze+KBbTshfguus61MRNQgYB6IaCd2/xl6WePR2pqdnTlrU1ABQLqhYB2bvMhEtBv1tbs6Mpbm4AKBNQLAe3c5n99qNjPna6trdnRlbc2ARUIqBcC2snNfy0UdNdptTa3dO2tTUAFAuqFgHZ285P7fzSX2/O3f6u9uWtvbQIqEFAvBLQLmFcsfVsb79LrTEA7biaglYOAYsasQUAFAuqFgGLGrEFABQLqhYBixqxBQAUC6oWAYsasQUAFAuqFgGLGrEFABQLqhYBixqxBQAUC6oWAYsasQUAFAuqFgGLGrNHejD108YyL7t8hZgK6AyGgmDFrtC9jj/yyh/tA7f/cV3NzCwHdkRBQzJg12pWx+z9c+JUu751fY7ODgO44CChmzBrtydiKb5V+qeAXXq2pOYSA7jgIKGbMGu3J2LzY3wW4qKbmEAK64yCgmDFrtCdjk2IBHVFTcwgB3XEQUMyYNdqTsX1jAf1tTc0hBHTHQUAxY9ZoT8YOigW0b03NIQR0x0FAMXfU/OqMn3ziI9+a+HTtzVkL6DmxgJ5UU3MIAd1xEFDMHTQ/+vWoGB+8ttbmlqwFdMn7S/1816M1NYcQ0B0HAcXcMfPS0l9Ufvc/amt2ZCugLdNLAZ1cY7ODgO44CCjmjpmnyKPWn9bW7MhYQFtO2S3cEjtPqrm5hYDuSAgo5o6Z95GA7lz2NGgXWOd2ZuyhcT/4wvcOvGcHmAnojoSAYu6Yea/YCyc319TsyFxA+W1McQhoggzu3ph3sHnFrrGAXlNLcwgB3Q4zAa0cBBRzx8yfjAX07pqaHQR0O8wEtHIQUMwdMw+Sfn5yRU3NDgK6HWYCWjkIKOaOme/ZrRTQ02trdhDQ7TBXO6DPHLHPBz/0vZNf3A5zKlMEtEAXOLAwFzhrp0I/m8tOQLvCOhNQoX0BnfeRaL/4bNkzOwQ0RcYOacw1Nf/5a+4w+cip5f3sCutMQIV2BXTR+4qPTD7xbIfNqUwR0AJd4MDCLCy67op/LNshZgK6HebqBrRJnhwf12FzKlMEtEAXOLAwdw8zARXaE9Cl75aAfqrD5lSmCGiBLnBgYe4eZgIqtCeg98Xe3pZ7qaPmVKYIaIEucGBh7h7mLhvQ5Wd9b4/ch/N/aYe5PQG9Kx7QZ1ITCWiS7nhgYe4e5q4a0Od+ELVtp4ltN7cnoE/3kH7umX59kYAm6Y4HFubuYe6qAf1JKW9ntNncrheRviEBLfvzJgQ0SXc8sDB3D3MXDejVkre9X2mruV0Bvagk2On29DQCmqQ7HliYu4c5cwF99g9HHvb7B7fXHPsEbu7KNprb+Ub6MYXF9zilbBIBTdIdDyzM3cOcsYCuOCH8/YE7NS/ZPvP3YwE9sU3mlnZ/lPO8T7ulf+WqsgmvXX/65LO035lKQJN05QMLc/cwZyygo4rV+3r5R8zbY/5WLKDHtMnc0v5fJrLivuuuf6h8+NrPhiemP3+0fBIBTdCVDyzM3cOcrYBeL9kbu13mfCygs9tidlTmtzFdsHPB+4mHy6YR0ARd+cDC3D3M2QponWTv/a9uj/lsWdBuZX+JpaoBfbr0Gfncz8pmIKAJuvKBhbl7mLMV0A/HThz/tj3mpZ8rLeeANpkdFQnoCbFVuH9b5lSmCGiBLnBgYe4e5mwFdJdYfcpenGmXeeGHCov58dI2mR0VCegvY6vw+22ZU5kioAW6wIGFuXuYsxXQvWP1uXX7zE/0290u5KMnLG+b2VGRgPaMrcKR2zKnMkVAC3SBAwtz9zBnK6D/K/HZI/0bOtptfuX+vz6m/BLXKgf0x7GAnrotcypTBLRAFziwMHcPc7YCOlfi03+7zTvmbyKNjQX0lm2ZU5kioAW6wIGFuXuYsxXQFb8utueTT263eccEdMHOpX5+8bVtmVOZIqAFusCBhbl7mLMV0JaXB0a/5eibyoc5O0dAW8YV+7nbTds0pzJFQAt0gQMLc/cwZyygLS13HVb365FXaM9ddpKArjg0Ogf9UPlnPAlokq58YGHuHubMBbRy5h32d+EfOOxX32+Y+kIbzKlMEdACXeDAwrw95nUbOss6E1ChUgHltzGl6AqHNOaamRcN/Wgu9+9jFtfenMWMEdCtmFOZIqAFsnZIY66h+dK9otcQPlT+53gyuM4EVCCgXggo5hqZ79q9+Crs3k/U1uzIXsYI6FbMqUwR0ALZOqQx19L8K3kf9X61NTuylzECuhVzKlMEtEC2DmnMNTS/uJsE9GM1NYdkL2MEdCvmVKYIaIFMHdKYa2leGPskXy79W9UzuM4EVCCgXggo5tqY74oHNP2HfTK4zgRUIKBeCCjm2pif3Un6+f6amkOylzECuhVzKlMEtECmDmnMNTV/TwLap7ZmR/YyRkDjhhdbCKjQSQ5pzLU0X9ej9Mskyv6ybQbXmYAK1Q7o1T/cNZf7+LjYEzupTBHQAtk6pDHX1HxS4UH8bnNqbW7JYsYIaJGxhbvWT8mfSkplioAWyNghjbmm5j9/1yZ0l5/Nr705ixkjoAV+X3pq5z9Kf6YplSkCWiBrhzTm2pqX3reo7I/y1sacvYwR0IjlH5Enx08vDqYyRUALZO+QxoxZnYGAClUN6LzY29v+tziYyhQBLdAFDizM3cNMQIWqBnRWLKCfLQ6mMkVAC3SBAwtz9zBvWE9Ai1Q1oDNjAf1McTCVKQJaoOoH1mtPPKw+ydYVDmnMtTP/rXHv3M7fmLK0fAoBbYO5PQG9ORbQHxcHU5kioAWqfGDd37BHLrfTd66uvbkrxOSZaSOax166fAeY273O/zpvwrjT7lcmVMh84i7RAf3Vx8smEdA2mNsT0GUfkoBOLQ6mMtVVA7r+zXVZOrCuKfzG3h5H1Nrc0pkCeu8pow+a9kjZ8Ol7hhvvC3dUz1yhdV4xObyqO/V+tkrmOaUj+utl9ycEtA3mdr2NaZo8Bdq93sZ04y/enct9/qiXyqc8euN195b96WdHVQ+sx99TuiUurq3Z0VkC+nzf8P3su41OPTw9objt3ntXlcwtlVrnEcWr+t/lf5+sEubXPinnRLPSEwloG8zteyP9AYVt/Yl7S0OpTHU8oCvPGdYwYs7abY5tc17PTNsR0ImFzw984eHUhBu/6YY/Pk35C6xVPbAOkN3+y7U1OzpJQF/5dnEb1SVun0Xy6zr3qY7ZUZF1vk5u54OrYr4t9qzcr9ITCWgbzO38KOfl39k5l/vQgc/ISKUC+vowY5qMOWD1Nsa2Oa9vpo4H9OzSPvaVZYkJM3cujPcvL2hVD6zPxfb7h2pqdnSSgB4t2+i8+PiE2Mb7e3qmbD1V81u5pu8ve8Vwyxrd/Pary1e21XxObFt8vmxB1Q7ogzMnn/on7ZXQqgd0+d1/vv0ZbUL1f5nI60+//Eb850oFdIoZ+1Lrs8PNzG2MbXNe30zxgD7wu4PG/b78WfOWpZdPnvC79DNjyz8mO9lZ8Qn3yqnMmal5Vtw8ZeLJfy5/bL/0LPO1rzddUD7h5bmHH3DcPGV73zN90glXpB6Droj9yvPcn1MzzPvdxFNuUE6JHzrjkMNmKX8m0mv+64mjJ8zW/rJ1e2NyzykHjDk9ffJueeb04X3GXlL+Us5j4/f5+Ofzlynr4DEvv2LiyMMvSm+k/yPb6DvxCT+ObbxpyXlu+sWenqdqKhXQRZN++5PmMxXBHScfNGlOemvHXnTIpXbLS3+8R273H8wu20j/aNgrl9t7UNndasurVx4/8bT0Z0vPigk+nZr2/MXHHjXrn8o6+GLy6Kwjjp6tZUkP6NP58BmWT1xYPqm9AXXm859WJugZW37cv1lxj58uLJvy3IWTj5xZvu1a7h/93c9+a7/yZ3yy8+vsVuZ7LbdflpjmjVsd2+a83pkkoM/3i54bG5u+87s4SuX/S27B+OcHfhmfMFjGP5Vc0J3/FY5+8ZaUYOEXoot/Ox3v2R8Mx791X2p88a/DZw8+8ofk8LtiV+nGxJS7/jsc/PKtqQW9OCQ8W9790GWpCT7zwz+MTnx+31JG+2LyXJ9wFXY9MP1GmdMKL+X8LTU+t/AC2c/L462b530mvPwnrk6uQGwb7RKv9DdiE45KzHJE4XeAfL689pUJ6IoJ0WveH7k2NeGRqOofmJG8+M6xq3pVfMryvoXRX6W26rmFv2f33rThsk+E4z9M7tux5whyP0y6T3lfuOUGPl++bmrGXh6xq5vh3ZPK7xHVgD79+aL4jLJp7QvoK/uF5j0mlpvVjL3684J4j9TJR2Gddx6QXucTQ0Fup0PK79SzEtAbzfHh17Fm4VbHtjmvd6ZSQF/5TvGWa0xuj7OLv4XsI4m9TB7B26M9PiH2BHzu3viE2/csjO6evIWe+Gjx4l9+OTHhjOL4vyXfsLL4M8UJUxPjXxZxj0SL/7pX0XxDYoalPyhevikx7jU/Wjp/O64lTfueifxWcUEmubWPL46/J/k4+rpdihN+1jbzjcW/gbnL5fHhO2K3Ti5+dvK/sfHEsSsfFPnP9N1MhQI6rijYPXnK/1hpV0pu7Q/Erupt8QkHl4YHJGa4fdfi+F7JO4Fzi7/kOblvL32fCE5MzHBQcXif8tNlLWOv/k9xhr5l09SA9i2Jd38wPa1dAX31x36zmrHDSua9/5WYMMazzvLiefmbXrIS0CnmhvDrRWaWb+yt8w7tPXzakm3Mqy0oGdCjZJ9JnNg9vmdp/H/j4zNie/HnYuMrdolN+FNswrIvloY/mQjlELn8MfHxR/YojSdPA5pK47s9EB+PPY33rfj4cinrJ1+JTzhWZpjbJnNdaXzXu1tStCsmsa2deCbyQd9LObE7h8vaYn71s6XLfzh+zvpQ7NbZOR7ESbEJC2Ljr31cxhNP1bR7nR1aQBfIGeWXE/cmec/WjrX+3fE96VHZeD3+EZ/hJzLDkPj4k3uVxn8cH2+ZXBr/WOKE/6bSrzTNjS9bNy1jJ4r5gvQ0LaDPxI6eg9IT2xXQk7Zi1jL2shznyUcgN8l4Yp2flXuZ3cqe0shKQCeYB8Ovt5kpnrHHBxsz0Jj8/OLkIy7SLqctKBHQFZ+Q7fT9+JrEDvVc/AFt/GFOoqyxGyIXP6O4KjY+Ozb+auzu/kvxBR0RmyH+G3ifjj2EGxOf4dnSqezOiUfw18QWlLhziJ0s/6At5idjf5ViVEuK9sQkvrW/G59wWMwcPwWN/0GhxraYr4jNMDM2/lrsV9/0jM/wT3kCJHH73xJb0C+2Z51DtIAeHDPEn2NZHLudE1v7AhkfFB+fGlvQxNj4C7vK+IfiM0yOzZB4sPRar8Lo+/+auKqS9NwHyk7HtYz9u8zwf9PTtIBeGrtGPdMT2xXQT8uCfpCepmUsfpB8Lz6h3rPO8Vfajk8vLSsBHWkWh1/vNhP1sQ1DzOzVweo5Jv9KYXLzVO1yZQvaMjDivk0Rz8Y2x64bNwm/jE2YHRtfu7eMz4iNb9pHxndeHhs/MragUbHxp2LjPdbGJvwiNuH82PifYuPfjps3LSp0afc5ieH4fcABsfHnfOvsM18dG99nU4rNdqOmx0Ls1k4PLYktaJcNsQk/i02YFRu/JDb+1baY4/cB+8UnxDbG+Yk5Sh9J/uAT8eELYwv64vasc8iWINicHoudH+bOjo3Hb+eeiTkaisOffjU+PDY2Q//Y+KOx8dybsQm/jo2flzC8c757S8fuA55LXtXYC6e5B9Lr0Vq+zi/ELp/Yw0KCoDU9dH5shn9PT/RubcX8Yty8IT1VMc+JzfDp+ATfOsfv6well6bdzj5zcRU2Jy9XkYA2m5fDr4+aUfrYVWZa+MN0Mz0d0MTlyha0pWfE/MKlH4zvZG/ErkKsh7lT4tet9Dxh7jPr4uPy1EjuV/Hx/WML6h0bjz+obJN5dmz8M8nt9frET9v7yQGPJ0dHecyL2muO796fDrYDr/lbsfH4Y4U/xMY/2xZDfJ17xSesKb1a9MstyVkuju4Sez6RGL0wtqDPt2sl20pb1vnfE3Os3z96KPD9FxLDB8Vm6BMbfzy+td+OTfh2bPzk9NVacucD69Jj8aen/tKGVUvs26+3YYb4w7T/bsPlvfwzbk6fz2nEH7J8OT7Bt86jY+ON23NV20JHA9qn1L3h+tjh5qnwh2fMyMLkUkATlytbUDqg8XOinTfHrsJPYxPOjV+31uGF0Y8me7X+P4sX3/Ox+PjhjjT9dwAAIABJREFUsQXtFxt/NTa+R2tsQvxs7LzYeHwn+0bZJlvzVtnQRI85fga6c/w+z2eOn4F+s0zTDp73be34+f75sfH4ex5+2BZD/Ax0ZGJKiwkHe+xb9qGK1ZeOHX70Ha3JwTtjC/pFm1ewPfwmZpgTG48/qEzfzk8c22gOui11VU+LzXB4bPztWAM+FJ/h57EZUq8N6HwwNsO9bbh8fA/b6Z02zBA/DPdtyzXy8Xx7zfHiJu5xfesce5I1d9D2XNW20PGH8FEf7zaH6WMDzVHHOo40xZWOPYSPXU5bUEjxOdDXYm+uSzz5Mi62nVJvrTnvK3bsPcPS76L851ejS+99TWJ4bmxBiZd55cWl3E/j4+NjM9wZG4+fLCeeA3NozxPFzfG3OMbX+RttMf9TXkPIDWuLOUR5PjD+TGTixSLfSzkv7C7jk9pijj/mn5GaduvhffsftSA9R4v+rNyrsadqTmmLOaQ9z4HGn4l8IDYe39pD0jNp5oWxGRJPgv9IxhMvz8f37dvTS9M+lRN7s+y7XkxPVJ6JXP5vMsPX0hPVV+Fjf7r0pvS09jwHGt+3/ys9UXsmcsXnZYbE36zyrXP8yfGyT05n5TnQw82i8Ovt5mR1bKMRNgXz5IeW1LzaghIBje9MiTc53i13318re7/XK4sWK2/sXjrthx/5wDcOTYX1RYnG+xLv7p0u5uvi4/fJi6rfTCyp9OajXI+yt7prO9lLPnPs5YvEe8e9ZtmZdkq+uuAxh2gxOVTMibw97Hkpp+VAWYWn2mJ+RV4g27vsV26067MxU0oL+tTL6WkVCehi+RUGybdoydbucVt6JtVcem4096PE+LzSy1HvXhQfv0deXfpK2X6sBTT27FH5m4O0l3LGyAynpqepW/uu0hsDBpdNa9eLSLHnM8ru99SM/bH0Cun3E9si9kxKcp2l9V8qe0EtKwGdYm4Kv14a+wRRfKy1r4l9NvPhaZb8vu7fVal5tQUlA/p86Y0yP05+Iqj00PvdZc1o34cLLyreQj3OToyXXvLMjUvOUPrU4V53Jsb/8d7ihBHtNSffiPPcl4oL+mHy3cY+832l07Gy95i0LyYv/ldxQT9Nbu3Ti+N7J14Wbnn5u4Xx3a5sm/nqYhx2mls2rV0BXVH8ZMSH/1E2rTLvA/1D8eb5ePJXRN1b2toHts383DcLl/9i6s57emFj7JnaeKUnd/ZIf8RCD+iK0suLn3iibAYtY0tK53XfK4uM/kmkedE9304jyy7fvoA+94Wi+btlS9IzdlbhUc53kx+b8q7zQ8WXl95f/lmkrAT0xsIJ42Hm7/rYIebJ8IeNrxaVpYfwictpC0oGtOXJ6O11PfqmHpusODo6H/vkzeWr3b5PZ1/w/ihK6bcTvnZM+E6mj5a9zfCk6HzsM+m9+7bo3SE7H1T+IQvdPDd6q9Se6QezTxQe3PVKf8jCZ74rupvZbVL5iXf7YvL0r6LjZFD6Ddmzomp8Pf2BuqXjwveHfbv8Xsxjvip6U9feZe8CbPens//gav+efZUPvFboo5xXfSq6L0n/ir2/R8/u7Dqh/EO+unnpJPfI9QNjyx5e//UXtg579k5/sKylsG9/4ob0BM8v1nip8Eb3r5UtyfN5oEe/H83w2yVlkzxb+5UZzT/45TjtGZb2fRLpMb/Zk7H7h//Huz74o5npg6q4zv+d/v2rj9e5e74eP1nUUkZWAroy32el/bKsLvFRztjYXHNqOHipmZsOaOJy2oJSAW1pufmQhqYjlE+2Pjq598+HzFJ+OXd7f73Fc7/r99M+U5TPBb947Yyzb1IEi6cMrB85t/y+eOk5g39qJmq/UNdjXnJqn5/2Pkn5XPD1Y0z9oemPTW7F/NolB9T3P+HRtpu9MbltYr+Bx5S9Hb+l5YVzx+131J+VZ0ZevOWCP5Z9OmUr5lfO3b9pv7PKWtLSgV/p8cpDTylXqHKfhV/2pymTfl9+gtuy/MKRv2k+Vvvkuc+84om7HtN+JXTLm08/+4Yy/MgxjT8bdNYryhTPbya6Y9yvf77vxdrvavR8Iv3qUb/6zUHpTy87qv7bmLzm9v42pjvG/ebnwy9R1vmxK8+5XPmMfHYCah96H702WDnWhK9/X3X54+mxVc1m9ppg81/yDS+nA5qcN/GDJ6Dd7jcTYcbMH5Vrg7n6v42pWgF9fajJj64zo8O3nDSZK8vG7mk2ZnAvU3dncQ4JaOJyiR8IKGbM2zATUKHzBjRYOWtofvgF0Tt6CwFNjAXLpx/ca+RpL25r3uQPBBQz5q2bCajQiQNabQgoZswaBFQgoF4IKGbMGgRUIKBeCChmzBoEVCCgXggoZswaBFQgoF4IKGbMGgRUIKBeCChmzBoEVCCgXggoZswaBFQgoF4IKGbMGgRUIKBeCChmzBoEVCCgXggoZswaBFQgoF4IKGbMGgRUIKBeCChmzBoEVCCgXggoZswaBFQgoF4IKGbMGgRUIKBeCChmzBoEVCCgXggoZswaBFQgoF4IKGbMGgRUIKBeCChmzBoEVCCgXggoZswaBFQgoF4IKGbMGgRUIKBeCChmzBoEVCCgXggoZswaBFQgoF4IKGbMGgRUIKBeCChmzBoEVCCgXggoZswaBFQgoF4IKGbMGgRUIKBeCChmzBoEVCCgXggoZswaBFQgoF4IKGbMGgRUIKBeEgF9ZuHC57S1W7Zw4UPqaj+6cOFSbfzFhQsXqzPcv/AedbybmpdU23x3u8zLO5X5Scxd15zKVHYDmuAPPXverI2/0bPnfuoMh/Xs+Zw2vrBnz2nqDL/p+YN2md/s2XNEVzXPaa95Qs+eS9pl/m3P77fL/FbPnsM7ifnunj1Pb6/5puqaTc/vdRLzyp49922X+Z6ePU9rl3luz543VsRcgIAWyF7GCKhAQLfHTEAFApqAgFbDTEC3w0xAt8NMQKsEAa2lmYBuh5mAboeZgFYJAlpLMwHdDjMB3Q4zAa0SBLSWZgK6HWYCuh1mAlolCGgtzQR0O8wEdDvMBBQAoNtAQAEAOggBBQDoIAQUAKCDEFAAgA5CQAEAOkgHA3qKMX+s7BVp25IXnz3CRAw79t5wYKL9/pDz3yy/6DwzJwjmm5nhD32jmQYeOeKiO0ycJjNjaGLA9D7y1s2JBS0wM+I/xi4+00rsP4OKC791c2JZQyddsNLOMCix+MayK2qv4zRzT2whpSmPnDqmd2EhSXG+yRRWrHyVU9dwjVtHjWbPKkWrfFS00oV1Xzywf9OABm0p4eVPM+ND+XpjXguvt92Kxkx3N4rVm7PsVzfJft9iL+W+lF/3+YV57QWfL1zAXfDggqfP+Nkri2PzzX7x7eJ4zeqSW2uqOcGYVUFgN+1Ldv414eARZlj/5rXht60Tzg0uT69NvZuy6nR3mbXTB/R5s3jNTncT6zaGPz5hTC/7U//N0fYx+y0IN0PCvnnUFWU7ypzYyqbEN5iZbvYhxvzJbe/iOjcU1rk07x3hGlmpPUj+FO0gvU2+V0P/CVNOKNoLlwkCu9Z/sjdfQtVr5Xx7y+43xPSRrWcvE7vuyaOjv7v9jzBT0jdWYqGNqT3c9E/ukMXjJ7WHh5stMV+fjU5VWlv3jb06J4bX7YlobcLbsOzqFFba/rvYmKnhv386whwT/jvFFcVMSWz/cEHzzf79B68rW1S0WaPtkdiWQWEPStk7FtB1dhc6WJtw+dUdWl75kmeaUeUT3zkrscHPig0MLrtwKaDuOvU1dfX19e6CBzxrj5M6U2fcf6a+2RwQX2Rd+O/4lfErkAzoO6Uc1dXPKga0uHCTjy/M/tA03+04dcURe7HeZduqGNC6+rq6ot2xeYr9YUBhIZbmUFNaVv5v+iq7I7cuWsd6ew1tcfqHV7Y+vpr2hyGFVbRXY2i45HDhfQurHAb08qvDdQ+3cl00X+EaFC5fX3+gW0YyoKWLN/0tEVBXoa0H1G2RsoC6dQmvdPNL0djyQwpr0XRU6TayAR2e3FpTzSxjFoUBvckUArrF3nZ1A6KZbm98I7gi2hGKN06dybut8XtTN3ZdMNvUHbyyeM3CgJprwx+fKFx8RmQx+9n/zdml22qoqbdrMb/XsqApXKS7zetHm0GJgF5R78ZNcb+5wYwozN4YBbSurnBDN7grO8n0K63lovDWmWDMMYUdpERh3QuXCQK71sfYm2+87NZuk80yAwsDhe10+emJLfeaKeyH4dEx0C7AbrQb0ofjFeFt75ZjL9brDZOgzowqXjwV0Lpwx7OMDKKAnlFX3DHd+p4eqiYW19bN/GpxzRqjtbn86vAycWaaAcHp4Urb636OsVva/XtMkzk1vC43rHPH5A32QA2vUnjQFQJqzNh1LcYsSO6Il19Vui2vDxdrZ7kp3N7RHpS0dzCgfzfNxryiTIif12zXkrWAtp5kGi9/JNw+5rSXzzXmbjtgzzPMvfa++1/pS5cC6q5TX3OcHdqw+KQ6M3Zfc5mdNtwcam/7jQuigC6xwnp7qmZ35NOuajZjN/kCaq+DOX3ZltvNYJP/V1AM6MPhwq9qiPbUOcFce1zZpTx/hun1gps81NxvJxu33PJtVQzow3Zkw2K7iMKl5prmm9YFW14KF+Iub+63fru3D1i25VpXUH2VXUDPtzUqXG1bnMH2oLnMDd9/souRu4xt1BmFVbRXY6hbsqO40oWAmma3ELvK+T6vbnl7QEE5326n+4vKmWUBdbeSMc8Ze5Tbi7croG6LlAXUVtKOPXPHQHNoNDbTrZEZZbdLPh7Q1Naaai7c16213bR2rU14MmkXbJ6M1nFt//PcyDQ7W525JJrNray9CsPMk3bKmEKHYgEdHf5YDGiD/f6dPsaMsP+bg0v2uvDcfsv+J9qADi1u0JmpgIYn5MFwc0/4nQ2oLeX+wSq32CnhGWiz055h1zkR0CBcI3vrDHe7rttB9rftfmh/F4r8v7bY7WHXPbpMENi17nWnmTHTXfhMu+D9w6vnHkYcfr35g+xV9rFCs/UVt5yb3TQXjg637z8fHR3K+Yxd8GX2xphxS6/wssPDNoeX9QT0MvtdeJg0bnLDTeay68zw1qC3m91uyrtDVSKg9kA6Ltqu0dqY5vAycWaaOvt/uNL7uoPZlu+AMLhHhjfTkr+7f+8pBjQ86IoBbQqC8oDaWUt70mC3WDvLyeEKRntQ6l31HQvoSea8g9RH2tsd0OKS773k+rJp80zT0+4+6QZ7TjXIPdgfbwfmudOLe/YzY8svXRbQIDjud81mnJkcBrR33SjzyAJzjD0Aem2xwj7m1uYwfy80m2tiVyAR0Hl2X73fjU0/1iljAbXc0BjeZnPW26NojltK6+lmWiGgbuMYu9zybRUPqB1tao4uZRfyQDg9XEhQCOg8kz/0+tA73LPKWkCPMpPd8H19o74HwV+M+UNhFeMBLa50IqB2s0+YFS52XKhMBDScIxFQe/HHwgi+5rZQLKC3zu1QQP9wyfXhcheEj6fWhFv42N8dc73bLmOKt5ELaHJr2YCe4dZ6mrm7r7057gvCta4zm6N1vNEUMmseqDeXRLMVAtps3EPM4Wa1XDMX0HxdXXjH9oR9BB+ehG8JggfNWLt1x7qAlewDw9v1avNKf7vihQ167yWnbi2g9u7wUntBu26HuJOzYkBnunW+KghmmSMLs4VrZEcb3K5rdxB7KtG0JbirzhzptrVpduseXSbYYh90uWLde8nv3H2EOfX66OpZZrr9pLRX2fo9EF7laMTN7gIaHh1u3/+Lad6iHo4uoJPvPcXMONadODwSBTS6bPHiSkDdtm90e/gCM9JMtv3615Z6M8Q8ssg0bQxVM4trOy86kMK12dxgK3+ZC2h4mTj3msbg3jHhxexdqr3WI8J/TXPfuqHu+pzk7kGunGcOC69SIqD2+7WXXPJCcq3ie9IIt1i7jL7hxgj3oJS9YwFd22CeuMwcpEzZ3oD6l2zv7geaK4MooIcbsyy41d7ZXBmEAQ2Wu4EkWkDXNSy62PQzzWFAzSEXmosWhM+BhucWNmEXR3252AyLbaZ4QO11aI4COiNUJgMaXBwF9AmbmDnhUh43Y2IBbUws1xPQ5oL9CTOgNbqAW0gQBTTaBmFAz/Ksciqgr7uAnmeaW+3w9eEJiLvMDFM6oOMBlVWWgFrlJQ2LwsXeFioTAQ2JB9Rdw0IE3RZq13OgakDnF3Jjz8+eiALap/BMbWG7OGxAeyW3lg3orW6tp9k8HezuLsK1zpvoGebWA6JZJ5s+rWFA3WypgK6Ra+a60zjMhJ8BfMJEd5Pm8SA421xh94cr3EM+sYe362tmdmKrzttaQGdHV96u2xx3+iUBjdZZ5g3XyGXV7bp2B7HFOi48Jx7jtrVpduseXSb4lzurPdndijPMYfZxxz2Fq2dHw4CW9qpG09ga7YrhiJvdBTRUuP18RuHcoxx7oebWBebMvFvoRVFAk5fVAxodXwvMRDv7RHOhvaZTzEWzzNQgVMWfA3UHUnFtBri1Mc3lV8dd+Wilbw2v9XHhv7YR7t/jbFHsg9SDiktNB7Sc+G051C3WNP8r2hhBEJTbOxTQO8yQ1mdLj+FXzj2oadCkha3hC0DhqyTzzU3rpzVdaKc9dvqBTePPftldbL65duNFwxv3nxPtmLEpC8y1r08b0Gvc/cEqW8axf3RLnm8OdIfJP08b2VRvHrV7/IIj+7gnsOzJow3o0WbYPa1nu9P6JvcMx5pZZuCkKaUn+eqHj5QXPAYWB82kI4fWuwcs7kGMmTMsfIZkxAJzhP3mxEeOdHMc+gc3sX9jU/hAoP6oS4bn7WUaTO+8/fl8d+0HuWd96sc+cKLJDxo86rhD7VynvGovW9fYaFdmfqQ6Lnwm6MI38mbf6Dmhy+yi+0fThrmTl4a6XqcOiX5unHx078JTp71L19kM7T182h/dE0b19UOmLdlwtDn4oOKzq/bo3b+fbYiZM/2IBb3MsCH20VvePuqYclz/fN70njCpf696d1Yx/zhTt/+c1e4q9TLH2gNxhts++TCgrQt6h9fLnHqMPAVozn/s9KGmjzsJt7ttY/GJs99PcM90PbXAXN3PTD9z2MDG/Y+zk8eZ/Ih+9Xl3Lccc2mi30vizLwsDOtZukT4nmwRNk+9588zo20ejgDbU2Wv611GmsY859Mh+dXX5sY3F1Vsfim1Arwx/7mNGmckuMvaM3wxfel5pIzQ17H/+se4Jxn724dthbt0OsTdb75Pumzq0cYTZtzm64EvTChe3HBH0iwYHj7c7woB/XGh3xmGm9+Z6c/5AuyOZ/ReY5uQVr99vQetb5w0y0e2YN4P+PrzexF5L6x9tIrfYXsXbp67wT3hr1tvRKzeeWNgM9lv3PGC9e+BtzF9Ptlc6v5/79izTeItdvP35bNPQO9ob6g6wKXavkI6f3cc0HDCq3pxx5+RGl6pz77QLtg8H/ha69hvUf3/7zUkTI0nDAHvbj+tTeDLeXmCMXWz4Q598vl6uXp0Z2BS77e01OdquxLAhjYOLA+6ZiWPCbVc3+63Jdh+wF288xP5cb05qbK6v69XPzW9vlaMKT/832MbZLTgguh72vPqAaOOcYUYOKO5Nefew1b10NGHxAmMPQbuv5u3mG+/WvdkeIvVNA3ubXkfa/WtI0whTHx4kvXuZfgPccVfYRwaPGdrQxzkbDxpgBowobvR89Fx5Q3RTubEh9nCeNKywevb/t5+Ibt86e53e2i/6tqHBnlbYR7R1Bx7XNNrcEx3BddHD9A0LbrYnwOHIRQ+bQ1yxeoX3xHZzNOw7oteFrlwdCujx5vygdVh0LhS8MdjUDbb77tVBcNOZJn/mWa6VN55qjA3on4275zCND4YBvepwM9xe70nu/Co+ZYE5f0jDmCZT97dR4Q02wC55vjneDG692q65vSHHbwouit3WLqBz4iMLZplDDzfbprG4y4wxvyt8e1gY0KMKP4Vf+iuvWrtd70AzfLiM9Aov1ccUX+Jwi58bfR8G1K7+2OKEQ+x+lNhbt0n8SM7P/7u1N+fdqWSzvcIFpgTB/cWrXLry1j+o1D575SZFr6qeMrj0UnydOTexMbdFNF/9ZS6gZ0Q3YBiHPtFXeWkqb+Y8lJjzsCOOOGJY4YoV7xzqzzVzHpRrnQqWvZ85a3341Qb0TBem+rpiQKPLTymtaq8RMlejSbyEN0AEt42VS01aVPq2wb2OHq2LmVUfRsKOHF2cfIa8gH52KSgls3xfb3QOjd0XmhGyZw4fXH5Zx2WxVx/rGkueUYWhPuFVlovbcwJXlqhUpj6cfPyh7t988oJuKaP91z9Bg7jq4xdz6zgwdr0TL5OGjCze+aUWXrzksHDjFpm7ZXpU8HG+a+KI8tbXc8Ubisa8Orl4j2lGygR3i8yT26tfcc+z946lG9sG9NLCcudHoWsdbKbZpg0x/9wYtsMmvuHB4PHB0WFxgitXRwK6Ou+eZj+38Eh7ujn2zWDLPJPfEBQfls43o/IXPfRWsCxvLlgTvDHFDNvoBgfua8u+qN499klMWWDqJq8OVo035uC8eeRYM8Iueb45u7/5e11+3sYz7dW+Ylm4rS64IrziLqDnLwo33x/CB81DzzK9hpr8XbdHG9/eyZvGB8L9K9rJ6qPN1TzEHHNiuEUPDo+ZN1a6HeOI6Aarc4sLLzfKqUb8xe1L9WbyOeEG3WC/1D9l19XdFLPc0Ix1fU3d6/PC29NuS+ucbK9oIaBuhzlhge1m/lB3E1rl2JGFO//CDZq/pj7MQ5/wJo7v9E1uFU9aHe74vca665C32Xgw2OIuua87yg9+253O9tkYTAkPpl7hbm+v9GFD3bmSuwojwp9n3Ftn3B7RZOafGn5pCOUnLgs9M8MToynXhtfrltPcD+fNcD/kCzkqvBRbZ+b2cV9tQPuGN6D74czw9nhg9fnWlTf2jCpv76nPGRJe/JDC/DaCkWn6JeGXy8LbwJ3umeNaV7sNau55xs1x7ZvRiaU9iRrcWgroOHfLTDKxgF5w9yDnjnb43q3X2H8nrH/UHSx3vRYOTb/TnhCdvmZZdOXdEXpkuMbRGy3y4fG41N3e+RH2ZrSP1BYV7zj/tGaze21/9Orwur8Yvv7w8gthwWZPjy4T3kbXvRQ+gojuSG+IJgyL3XjmOXd2Oaqw2OjRT79oOxZu4379C9vWmXqHKxQtaODfbnZfzpzj/m3c6J4XcBex2/kod/nDwttjdDRYt2GRKbYx/9LF0QKbTdN4M7QQieJ+Fh4BI8Lb8ab+JkVj/Ic603fIGSbaXO66jnXliy+qmB93y5+yaoIJL1NcsVHRPXtduA52J40OvMK9/XhTXGd3a9tvhhn3CKwhXLWSv2/xMgcc4o7Ggeeb88NrPDDc2hcfH04Ozw76hwHrX1+cIdxTo6vXIP+G929jotP5cKepH1rcUI5jwn8HF96UMKTeHcB39bO3Vrixbng7jNtUc7ZtWi/bNns3eMGaR61l2Koh9rx7lD2y86/YcnUkoLfbR/BB8LDdxdxPo83T7stxB78UC2j0pP00c0bY8THutf/54fM5QXCquSU1xT50cm+3+rupv8ou+XF3+NtHwzNn2FvlymBTX3OnGTffPupuNn9p7Rc7aenTxxwWtIZ39vbQu9RMc6+pGnejuHec3fAHt1Gj+7AJywq7S91qd0Y2MDohOtA91V8IaOGWiI4Ft1scNj/avZ52J/W9D37JfbkhcLts39Ju1XzwS/OiPeuY4ATbiTHJEjqOeyUfyZIPl3qbRncudWX0lsLwgZCJluROh+yVHhO+ay5aWj83cFH47Hbhql4zw325YVPv6NqeHh6ivc0J003dK8c2xN73Gb1LZ7Apvi8lzpzw5PSG+aWLlZJZ+HdCdO0GmTn1J5kwoNG7l4oXcG9BOdbtjmecZo+X6UMKpw1ywJXec1V22mMfnFzlvoYPmcYHwV9Lh2fh3VbFd11dY+S9L8W39iyPTkMPdo+rZ7qXHU3f8EWkgumCoPBMygV1xc0bHiQjwy1vNtu7v/AhdB/3KtFwM75fYeFu2QfYjdynwfw+bPSaoNUeqScGs6LFNY5zT5pNC2+R6EF54f2aa92cfQonWcfNjE2JrfcAc0x4vzzY3cflTf/Epopvnxm/C3e8wvqPdzfDQNPvVPugqanBnHhzdI872D2jOHBzFOj+JxTnbehnzjk1WuDk+DNCxZDFTgQd+06NvkaH1CB3fO5nRg6ximZ7zz7NFE6djxzjrm6zue6I0pzjgi0N5iCXzcZouY1Xm1lubx0TbfszorhfMy/aF3s5RZ1r6r5uu0+1U890D40PKZ1j2mvWGN7NuSWOChfyxDx7WMuuPM4tcaDzneBusafslMdcDN2uOTe2UiNL301ym2Kcu/9qiPbMRrfHNJ1rDnfb+wz3Kvz06D1+rh/3Tbf777Rwc1wevu9v3AX2bOFmeyTaKzEpsA8n93e9sBvjBDMtDNx0M32B6d2RgB5rH8EHwea+0WP4CeZSeet3MaAHhM/DDiu85n+bOckNRmesF5mbUlMWmOPd94vNQW7JK8wou+T/3961Bld1XeczsZMmmUzapul0mpl2OtM207R/+iMznelk+qNJZ5J21rkv3YdeVy8kQA9AQkIICT3M20IIAZfYgHjKEFuAY7ABGxvZhiKHmMSObcA8bOM4BkW2MSZYCCSdrm/tc+499+peCJcpY83sz2Puvefssx9rr/3ttdde+4gJ9CTr11XrVWoY73vs1ujoaAUduRmGSD2gRhnsP7NuqsUY5Y2NjlmK//zmU/wv65oJgfj4YrfF6niIO7EOQ1VRpkkPi2+aEmrhTIBYxtTbo7DvBbJd+mwWWjBqEuuK9bKZAxy0NnHXPZe8wJGuaW+m5IUeNC7f9Mnn8RpV4qwue3LNYa30IP5ihoVKvPmrLTLHezC0EwRK/Sfx7+JXWVu8PFjf5JbVsI7m9VI+U0koJa6Z0i8ce5+XTNAzz49nAAAcDElEQVSwVJ9FTQfqtVQWPt5yam3ZxjN4f278fqJFZaj4hU42Wiq6UsfnbcAEKqNzcIxlVm5Zx3kNmjbhO2muDQ9QvIUx8ag1TwyhrvOVtNqvHJaZcHPyalNMuiCNvaDmyeowXcXs39PqSjODhbw6SBUBWFB8ey/xWosJtJLvIWDOHBcVqxUrUdbRXvJex/dT62x+wiCd2Zwi9BL+rwWK9kI3rPdAsu2XhK7H3Y/OprxNnHj6Nuac1Syki+iYmQiGYFZluqN6sZK9FLHl17hFfS6jxeoL+mpmwPkmixhHS2Pr8c1E9ysKb/+skEpgibPyFXVRJ2576bFiYe3AyC78jmBa77VjLvPVnOul0DlxdNKKAan9HJFYzsgBuy1BFnJFIaeDpRB6Do1BlRBhtApFH2UZrxeb9iT/XwOdjPLYUnOyqlsF6tXAWWwfAeFvy6FKjP0OuKNOueRXE/+2c5tIhouuHZNBK0Z8eJg82Ku5gE2ks7ZzaTkT1llu5UwIN2zd3K86qP0zlvd1/r4TE1YJQsMee47H9RkhuLNUcYzasyDQqx4JlOPJWLbxXuRF1baT15MJdAk+Ru3AD+ttpByg5fJjBxNo8p1j1IPvZ2gBch6mGV2YyWJjuQhW6qEDKuvxKpqlukN8oLfO8/JuyQYxJniWwWuVR+wJvfhtSA4mOnQWsc7jXuVWiZZCMLbTY3pbW6tXpVlJdQOs1souWCIu6ZDdDZhXvYpAq2WXPUBHuck0K0zNbW22h6m2ja3mwNu2araL5VB+TVVGpWCm7ZK5HikiNLNahoe9k9S4ghxtz5dOp5w2qHsgnJ/v0NY6qNYBWQzFrDFQXnUPjym2g0UHZG4OUcH116guill3qJ/WWL3i04rSCQSYcI4RGURD+Rj8YdERMRn49/atlLCfG1chz+WiXZFaiuzfwcYCE+g86YjFnI4ZpHkaVbUhD7M1ysUEtoim54SpQgXg0fDobNqOXfMqRbg2TaO25Y2zpKtmt3GDfC9vYLnwwMda+eqIDN9heEt4zT8cYgG2YuzMzqHnFe0O7RUCFY/AOgT5UD/Gcx61v/xT1RtHZGmY63QfYJIdUZ6vnCbiIG5pKZT5MHJ1QK0BSvijzkMBk5gPi7adfJ3HbFupWgf74SIdEGM9tkPlJbOeKUU0c6och7GXtKhla7uzuodXRBx3C2oUz5qqt59XFu0+aGfMEhdy/hMgZi8UuwycV97LiWt2MOdwD1XDJmaJPGQheLKJJVq3gHw1kPEALRKKDCqzNiQ2oG3atsodj9JFZW9COH5njS5XSpVQAgtUVxV20UZVydeULRtsq0TKMtyc0aYOM3gd7QyP54mdv2tAGp4nBFTLHKjUv47pPSjeVPwY4Ex6UI9mHysPxDf4CA8PdIF5It8m0Gp+OMDK4nGECp83+n3pdPtCIYxNuIfMM8qWh1PMtQY8pmJiGuGsFDEvxPPmtgh0jVpZap4FtoJEqbBtAT8cRhHeNv4eEJWoHcuj1/j6W2AsGpqI0mtv88/mGk6PRMxcWRDooXgV1Rr+lxCZr+O8m0ARucJabR/qGsYBlwFou02gyXfsOIczbof3HlaoDiq2xnK9cprqWIM9aQcUgU7bcAzmRn67CMBHJR0dDbK1zN1bO+ysXzBm98vylszZGfzn8L6vpEUgUGX+r5qc5m0h0Ii9OPR27Js2OQ3iSOKbSCt4zL3CA/Koc2+XTaCyn+uhpr6kJ01KsVNTYW8ffiauyhjMfm6c17NuUkLfLFqkCPSIECgQpeNJaQ64vkcGZAPFM/6obUCWqAqGHQKNcpFDO1jiTKBtxzs2gED9iJNKxc9SL/x+NeW1Q7p3tExxStSvTPar7xFsp+GxXAleGC7mmsgG89rtoI12lR0GlYi2NUGguIbx3AVrFj/KoQQZTT3FbWgmW1A8/R9Nvv1rWR67bVg/yFvxRpxABQWUirUtKoy7vWTSrWQMqh76OWy2mPW/stbukjGd3+5hK24WG79I4RBoBCHdXPBqa9SVC1vxVLER8VOd6QoxbXkkIXPNUHGWXM5KRaDkvZp0e0bSzp8jg7C1XKailwbsQYyJe1GcQGvd20EPDfDg2ESuDVnahIGa6+QoBFpnudWUeN2wQ3FjDvKyj8MRrbEJNNV3xvcPPZqyS7mQ7I2rctfFTOPulqjE8SXQ65xbrGB+em6YvCPD7kQv0ZosCLSFwmUCj70Pbw0/uzJEntMuApVAvbideQ4rUOdYepIFKnfiBJqHnEvIxzkv49TPkd86qYzZwywhD0XeL8OaAATK/cxjIzBiidUortHAWtgE3C9l50hi0pTWXIDoTLWV+c4E+ubMU3IDkXEH1fJsFc0FgapuFlbqRcLXuXZPCrudxs+Z1hvoQE7oeYTmcZeZp9HJH+PAVy8byudssc6H2TubnmRithba1/aRcrCcUavPEqn24CqZ/Gi6nFULIW9Mw/xrxgTqss8W60Jm+PKVKE989CzHR6UiBZh5w3StDKQzE1wS5EwqFYHuFQJFOVGJoF+YT3OsYiy8QGo90kKTZqo5ocjaqrbRZGRNF3W0LdBnyHdjBz/DBNq+FG4LEOgmomvcZNSSu1LiQLfJaJr+DEVvqE2f3aA6kOeaiCg0pP5LRWmzj16KoKRBbPtNv4x9eZ6FL/PHJ7uE4IdPcr+AQGH1iMkRO4loXeHSxWJg/gZf5yQIlI3Fyze4mL0L7SGy1Rmi4jGmFWzNsIzH1pFn/W7OrwxrdD+V3uIhtNmypKd6+slnhelzk46U0cVnV3L7n0UBEgcKZlHbcIpAnV0hS/a+mTc8zHefQn6xFnjizQSBNmP3DzPMlQkPluLi+jChgjJbR+G6iyFIsx1rSOwqTlg+lkCHEKhtgfZBA5XqrrEmIMYGMrFzW8QdV1zHKcL95HAEtbE2xpaRLFHCtgV6ED8LKbbAJtBaRYDixFrN43MhOhPN5MyL22wCreeikKySR/Ay1DyCg+Fv0FzLQ7XO/BTmkYSutuOACoVG6+IEigzmFbL0wf881Ew6Bh29todNToeE5xxliZqd/KsCmczlh5F7SFrcxt3TZ7s2/LCT14eoHEPaIVBs9Psp2OvM1swHDy/FWs8rF6IopB0WUuhZuWDekjjQc6oXVwg3tUHfYxQ/goYyn0IftIHLOMNjVM9PeOjaQPydEfPvnkCvmPSK+rYC6++bQxL0PLKaVqYSqFVC6m/0HObJKIlAk+/ECZSQMy/hOecSTs2z7KU1dNyytsdAnC/5aLcw5T50eSG9ypLYozaRZLHz6llTJOfx7OP+Y/2sBjd6x/ifR8RPA4cWi61o5BWRMQj0faVKiyh8OG4oxcRuHRAKWShG5zRaiY9FN1HFAL20nK+sgQG8EgR61KRDTFW7hg/bGVShrxZBlftgMkkXHRVfAhWN+UU/TZkbB2tRzSqKPQwVa8SNNrSkgGbcxD7EKYh10YfvN9CeXPMKyvsUmcXkoDO2TWFjV9FbuVioNL81vIXKRpaTr1AItEsIdJaMzxNsOYVDbLgU0RI16W63N5EWDYgCz7XACQVq7FBM/GeKQD1DJu3ZwQTABNoSppcVgbJZdApzRh3SvNNJsz8cXiWPBoZ89MS7IgYvXnmCE89rld2GkfCIcg5usfhJvjtYjmZcAcMtRSA9X6mWKe/CGp5v+uyXicjct+Ycs7wllv9SIVDhzHoh0LmfIZCeVkCvaC+sVLDAVmd9+bj8W5DPs0mQxgqo6cNT3MZcEGiIKRhb3R8o47a9hoJMoJcD9HAJAumZaFviBNoB4cjucqXsWjgEOg4BtnKqdpbKu7K1JRN8KoGCOF+womxlejHHCt9Y4liohBRjOPNQg2+5CKbmXCshFCZQP00HgbLsOqzzkt8asKbsdj4++qG8L6A4wFZFeIvEYomQ9rA2drZiNo7a5mYEMxK2sDsbbAJtUAb6DNl14vHZzml+tUA1rbbcJtAtVpH0QGDkMAxk2dLcZF2iEM93B5X3kRcsfAFiOKIIdI4QaPBGnEC5mfWOD5SHGpXchA156jwiCu1orZy1EMlrpFZFQqAwNkw5Ort9ewn1+UhC9hewfB6fCFI3Trk7BKqsyoLHXKFsBfUyfbSjgSsxrzShgPAnZCLtOyDQ0d1qrQoCHf1dKQiWCXSnxUIFI7XTk+dhguwRLqOCXhbGYW7/KeEyTnSMQndPoAcoclN944Xh+9YV8oj/82VQYQqBdlE3PiZq8B6GJAJNupMgUOQMAj2uaCJKS/Jyb1ofUgEi2a/02ivzfawTfg9dwine/aQ0gfF+Kdk/ZFHVToEd6NoJkjgWmeeWi2utT0kZBLpBjYNQBXVCumLPx+CffFrtwpvX0Zkl4BkemuAwzkiUpKeKUy+SZYaXV5I8djbXULzzfBQTB9Ylv72CfVyF9ZlPiq5wlhiT/fYDsS6pHP5ps6NCpKg2iFW2UE/2yMJ7kSz5YvbmlenFhnKVLHFBFhuYQK2XQDj864yXpbpOthKYQDeLmj8lW1OyrKmnXtlu2Ks0vkcItMOe47u8dn1QdTYJw2A4JtBiCZewCXQ5CHQzSu7u5CI2F6tBua83vmwGb/6O/18rByzoqfhYok6c9Gcc96KqB/JEiEKJzCw4ifREXm4/TnCrtzHBBJ3HxsLEWcnBLwR6tVYEgtMbwYnL6BcmUL6xDfNfni1P6fWHbJlz/b0Eg7NelrUgUDbePkCnt01cwmNFsEq4dc4uPJzFcQJ9CJIUCQWSLFDhZw+vnruZ77qQGwi0IU6gQZtAIZYytg2C3BONSpMGVYOWi2MVJ5HErxoCgfaDV5cJgRZQLgg0308PWeM42oHxUi97qbzsos2rVad2C8+tUmsqOltDtmsoV5XG/DHLDrgoIRWitFTNTVIos1ZnkGmoqkWNjhk4IIUqn+CiJG5o3xLVsxG87ucTGXSLxyVtIdd3Quz94yruuFO5qvbGCZR7MAo6LBdfNSgJy6Dl45Ch7TJXmMktCanl3gHltu6Hvi5xRYqIjc0M0Y2FS5xAxXNQWmO3h0C26FFxRrXQIiwrgyDO8AZ4uflpEGif7ThYwNLvk2JAoDkf9MmahFXizXGUfk64LMjtPMGM1UTLhcs4UVZhTE22L5MpOES7cIJ/Fc/VF2vkBDczjotAP/TStuvWJ0uoeDSFQJPuJAgUOYNAOWek3ovRZw3NpQ2sPrT5I5shsX5truQ+csJu8kqg22XUIb92ytWFZVQpOzX7lAnjFVWu4Du9Xp8sCld9fmuHE2czLR5IxnMfks9/VtHwKnii/bSbTb7IqKUqsNBD9ubQTiEyVqutzeSpTeTBV0pN1yAjTAFmPF4IazR4ET1+tQ2KAWcqAq1T92eMScfWP1+kgni6jsl0vNu6weUW/uKa7KDMY6VZ4bXnXFbrxRuo7GKN/aPcw1JtlvUiE+hnwprHDyDvalWjZpmNNiuP9iELGrZxnSpd7TXZ54m8ubPlMMtjEAv+lKIiUB8r8oGxn0scKI9YHzchhkL8B+ytCcgvKn3VqDbkJHApRD/lzH2nr0trB6uQNmR3pDOfvIs5KPZL0PewmCfQbQ/z1K9L0FZ7U+foI8j6xmluxjy1hK86vS8IkWPg5CdkH0g4YfnSJwjP95Xh61vYhSd1IKenxJ6dTdaX92RMD32g4kDXKKcHCNSjOrhK2Waqmf54KFKRx94p62mBZeW1CVQm6VK7EnXKz2PvG+8sEUqSWXXWxx/jo1g5HhCDVc6WEc3ohaE5TxGEZ/dWucvjpddpk2e3HUy5VirRaeug6IGtjnIwwP9bZ18U0aRRpK1gSTjZMC/wasYL+nUiKjeKal1DUbKvKr3kEUfX6mvig9p/DKqMVPuHpN5Ln8W/wYN2MP4SiVRwDmOocqD4eTfPl+LCxjqyd4nseog2FNaC/04fUKddPNiZCMe92X6l75wZKisECrNVjSy/5KOKU/440fs82i2htratq8yEdimusFSVvu4QAgiP5Ijc/Kb33OilZ0qobdzqEBEIY3H63zJjfRRmMyc2dsjr++0xyr1rAv3YxMlKhW6s4X/Boi1mcc7F60p4iq5LcKV10Ecmj6P8160UAk26YxPoCZKcQaCcM1LfYqF5mDhqbgxQCkRrXbsTpulcdGPysQnBi4kDLfMTuSUwKe4HVaVHpa3JQHybO+Bu8iGm9FtXk/c2AkkpPUkbL5VKe8lbK15bB28NOOdQ4mVxqrnK5efZx1ItdQjUGnRGysJ4wJBop1Nq0g+i+NwEuvXFHe2PTcQJtJWbHnZXOki9L6e0qcTeMF3RGE+0kXrXJ4rwJ8aNkoFAPACnbsJHUiqm43vO43PRnKQX8wmeiceBCiASDB97B8Gc3AV8p+hhMvusavcWUFyFxjri7ZoeTrpNGX4lAJXzhuFV8tkE+nRN/KYjh2DAlRpzvKsW9i0PXkrIw6CsV4xZ92ZHDcbLjkn7JmlgHyU2EyH0maqtyiSzx5WrKKkfRbm0sYHyUp4qO+h6xjEbwomyKpMiBVWqMHnak55JqRdsZR6FZYlWu9rvTjsbBMo1mu+qg1jgVORKNXcUlo47jf3V83pZPM/SPhrcmJR/I6+39vAnOM06qE41MGMNhuV8qfkiM1fTXRPofiqecL6/ijW8dXrxNH9h/dPyuqdXpvkqXARqXeisDNbG5F1iyQTqvmMTKK/9JhwC5Zx5QWatppyyUO0TvLAfbAh6veGOWK4jSE9JQSTa1FCaRiPMChcDzu8IJ5J4IrnMTY9bWzDCcsgsPHJ+8uNFh8bkrWSetl0lcuSW8mcGpynr67QKu/Mx/efV7+qexRJdcdlWL39DTwqBVlfy6M1JU0OvL68sLH2Y04Rj4N7EZGB6zKIV3ITOFxfKASAzt+21CRaxnGSvUG/h8qnjRhMWL7KiTfUVzK6BzounF0fIg36QUP9jQ7TmuhknUPGKINz7pzhIFQ2L5Us5Ozvz45Uqv9BZTKGoOke8FO0uZmttlac2XFDBDYt4qUE6UBFo7DLbWBWdu2nmLDkLH9stZ+ErfTne3LakxtKCiY+q7BnjvDoLz/B1v85r2YrGWbksy1BlALtMgyXiwHtXNe4qm1RFBbzYjGBTqqWVLeMR7LmEIzJv+eqWg0x9+VhlugjULAoWki8a5QorXSkIuqcrNhj94eh0qv1oTuFhJtC1r7j7x+/zMt8ygR6WaPaKp0cv9+RT0o5xrqLkDuVCYdSyvVo8R+XiyWmSf6FffodAB4QnPbw4fPpEOfo5PyAeO5OCQaG4fRTbRPIuxHryFTRLD5Qv4afYpveBQKfDUl/8i6URP8uadikC3YKj4zlyRj0Hi7BARdBbxHpiFszANjXedSr1rqPcoBwU90bUJtI0sdPzaVkhJeZPM8TN7bxoXahSXPUIziPVYI+Mi9rVpKbXQCM1g+zXlHnNAJvuJsZWg3VhvtfW4cZi2cGfDYM5sLNBtp9W0JpB+90LQF5TEwVCLW8NUVmxl6WcW843yjAYiuHvysuhnGYupZqXULUj8ygk700NR0ItB1XoS7ghwkwg2x1bp9H8HcoEjl2okYGFuqtpSkQcEFVsHBWfV/epOqlE1S6W4WJ5Xes0vBGFKrB/u3pkL/bAZk7jZrbUBPNqV7wGOuJ1cR44TV4T7lWMdblJyQrMpf+kx33GJjqb4ccXGndZ02wbtlLNrhkvpcs3m7ImKisnJl+NF9WhDs39EchU+BBtzP75dBdvW6X7pkebaCXN+6OFk8AdBfrHSzxb/D+VoAn0PqGjTN5/PBpF0GHSjy807rKm99iwPwQ8n6a9lC7feyprP717m9LvPNjuVPjutO8bv8Pzt8s0bZXumx51lM1DUaNRT6G3VROoC5pA7xO20gJW8pFu+ZsqST++0LjLmt5Tw0Y+X4uTvekupcv3nsq6nvfIbUq/82C7Q+HjMxZl8fztMk1bpfumR1uplIvigkppaTZMpAlU4x4xUk3BBY0RKriU+uMLjbus6T01rIXIez79pXT53psQ8TeRMpZ+58F2h8IH/HeoVNrnb5dp2irdNz3igkzsl5tclCZQNzSB3i+M9M8O585d//vJP77QuMua3kvDHg1Wn8x0KV2+9yRE/FXOjKX/EYPttoXLX+XM4vnbZJq+SvdNj0b6ZwU8Hv9sLkoTqBuaQDU0NDSyhCZQDQ0NjSyhCVRDQ0MjS2gC1dDQ0MgSmkA1NDQ0soQmUA0NDY0soQlUQ0NDI0toAtWYMthhJKHTskb/3PjG54kEbxvGf1gbjRRstPYYxjc+TCT7zZeMr75jWf1Oggf/ybvyaqYiNDRuA02gGlMGadhtmmHsTSRYbhixdAQ68d+GEY2nmviRYeCkZb870d/8KlMRGhqZoQlUY8qA2S2/O4FX+dIRwwgnEvyb8aXL1hvqbqFh5Kpvb1jWO18zjONOqn2G8fcjlhBoSBIsDHzFML7zUYYiNDQyQxOoxpQBs9uOlEtjf218Pf4mog8M4z/jd3YZxpZEumWG8f1x9XX0u4Yhfyq7H8apwhm+1pqhCA2NzNAEqjFlkI7dag2j3/m+zjASB9yTCXT0nw1jk/rabRg++eIiUOuoYfwgUxEaGhmhCVRjyiAdu50wjBzn+w+NBxKv1UgmUOslw/jLK/jy0Z8ZX3tPLrkJdOIvjG9nKkJDIyM0gWpMGaRjt4l/ML52TX39+AHjvxI3UgjUKjGMOfisNowl6oqbQK3vG8ZnGYrQ0MgITaAaUwZp2W2hYfxMfdvqJsRJBDr8LeOBtyzr1APGP95QV5II9NvGNycyFaGhkQmaQDWmDNKy2ynHpWmZxoMfJa6nEqjVaxg/mrB+YhiH7AspPtB/z1iEhkYmaALVmDJgditcm4C9q/6vxp9g8W394avGj12JJxHo+A8MY+8hwwg4F1wEeva7hrEicxEaGhmgCVRjyiAlyv2WuvqwYTyGz92GsdmVeBKBWm88aPzd94yvX3R+x+NAW4NfMYzvjWYuQkMjAzSBakwZpGe3i4Zh4jPP+PInrsSTCdSah6eWxX8mnUT6lzdvU4SGRgZoAtWYMsjgoPyB8ZVPLWv0m8b/uK+mIdA//K1hfPdG/GeCQL/1w0Ujty1CQyM9NIFqTBlkYLf1hrHdsg4axjb31TQEaq2NR9MDSbvwty9CQyM9NIFqTBlkYLffPwDbs0Ls0ATSEegWw3D9uUxNoBr3DE2gGlMGmdjtJ8aXPxn7K+UJjUMTqMZ9gCZQjSmDTOy2nbnyqGH0JV3UBKpxH6AJVGPKIBO7ffZV48d1djRoHJpANe4DNIFqTBlkZLeg8eB3nPNIDjSBatwHaALVmDJIedvx6viNJxGLtCs5cdYEmr4IDY100ASqMWWQEuX+QPzGjT814u9kcpA1gaYvQkMjHTSBakwZZGa3UtdbQW1oAtW4D9AEqqGhoZElNIFqaGhoZAlNoBoaGhpZQhOohoaGRpbQBKqhoaGRJTSBamhoaGQJTaAaGhoaWUITqIaGhkaW0ASqoaGhkSU0gWpoaGhkCU2gGhoaGllCE6iGhoZGltAEqqGhoZElNIFqaGhoZAlNoBoaGhpZQhOohoaGRpbQBKqhoaGRJTSBamhoaGQJTaAaGhoaWUITqIaGhkaW+D9/rfCQH5qR+gAAAABJRU5ErkJggg==" width="672" /></p>
+<p>Again, there is one event type that stands out among the events. This event is <code>Funnel Cloud</code>.</p>
+<pre class="r"><code>print(health_df$EVTYPE[which.max(econ_df$TOTAL_DMG)])</code></pre>
+<pre><code>## [1] &quot;Funnel Cloud&quot;</code></pre>
+<p>There is a lot more we could do with this data, but that’s it for now.</p>
 </div>
 </div>
 

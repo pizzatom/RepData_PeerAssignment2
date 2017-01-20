@@ -47,7 +47,7 @@ if (!file.exists(f.data)) {
 }
 ```
 
-We next read the data into memory. We will use `cache=TRUE` so we only have to read from the disk once during the course of analysis. 
+We next read the data into memory. 
 
 ```{r read data, cache=TRUE}
 df <- read.csv(f.data)
@@ -56,7 +56,7 @@ df <- read.csv(f.data)
 ### Preprocessing
 Our data set contains information about 985 different types of events, listed in the `EVTYPE` variable, which can be seen by taking a peak at the unique entries. 
 ```{r unique events}
-#print(unique(df$EVTYPE))
+print(unique(df$EVTYPE))
 ```
 
 Looking at these unique entries also raises some questions about the cleanliness of this data. For example, `TSTM WIND` represents the same thing as `THUNDERSTORM WIND` which is the same as `THUNDERSTORM WINDS`, etc. In summary, our data is not clean and not tidy. However, because this project is not designed to test how well one can clean and tidy data, so I'll just walk through a few quick proceedures to tidy things up a bit. 
@@ -92,19 +92,17 @@ magnitude <- data.frame(ALPHA=c("K", "M","B"), MAG=c(1e3,1e6,1e9))
 ```
 
 
-```{r}
-test <-df %>% 
-       select(EVTYPE, PROPDMG, CROPDMG, PROPDMGEXP, CROPDMGEXP) %>%
+```{r fixing DMG magnitudes, cache=TRUE}
+df <- df %>% 
        mutate(CROPDMGEXP=toupper(CROPDMGEXP)) %>%
        mutate(PROPDMGEXP=toupper(PROPDMGEXP))
 
-test <- left_join(x=test,y=magnitude,by=c('CROPDMGEXP'='ALPHA')) %>%
-        mutate(CROPDMG=CROPDMG*MAG) %>%
-        select(-MAG) %>%
-        left_join(x=test,y=magnitude,by=c('PROPDMGEXP'='ALPHA')) %>%
-        mutate(PROPDMG=PROPDMG*MAG) %>%
-        select(-MAG)
-head(test)
+df <- left_join(x=df,y=magnitude,by=c('CROPDMGEXP'='ALPHA')) %>%
+        mutate(CROPDMG=CROPDMG*MAG.y) %>%
+        select(-MAG.y) %>%
+        left_join(x=df,y=magnitude,by=c('PROPDMGEXP'='ALPHA')) %>%
+        mutate(PROPDMG=PROPDMG*MAG.y) %>%
+        select(-MAG.y)
 ```
 
 
@@ -142,20 +140,27 @@ print(health_df$EVTYPE[which.max(health_df$TOTAL_HEALTH)])
 
 ### Economic Consequences 
 
-We measure economic consequences as the sum of property damage (`PROPDMG`), crop damage (`CROPDMG`). 
+We measure economic consequences as the sum of property damage (`PROPDMG`), crop damage (`CROPDMG`). Since we were not able to determine the magnitude of a number of entries we will have to remove the NA values as well. 
 
 ```{r economic consequences}
-econ_df <-   df %>% 
-             select(EVTYPE,PROPDMG,CROPDMG,PROPDMGEXP,CROPDMGEXP) %>%
-             mutate(DMG = PROPDMG +CROPDMG) %>%
-             group_by(EVTYPE) %>%
-             summarize(TOTAL_DMG = sum(DMG)) %>%
-             filter(TOTAL_DMG > 1e6)
+econ_df <- df %>% 
+           select(EVTYPE,PROPDMG,CROPDMG) %>%
+           mutate(DMG = PROPDMG+CROPDMG) %>%
+           group_by(EVTYPE) %>%
+           summarize(TOTAL_DMG = sum(DMG, na.rm=TRUE ))
+           
+head(econ_df)
 ```
 
 Then we plot it. It looks like 
-```{r econ plot}
-g.econ <- ggplot(econ_df, aes(x = EVTYPE, y=TOTAL_DMG))
+```{r plot econ}
+g.econ <- ggplot(econ_df, aes(x = EVTYPE, y=TOTAL_DMG, rm.na=TRUE ))
 g.econ + geom_point()
 ```
 
+Again, there is one event type that stands out among the events. This event is `Funnel Cloud`. 
+```{r}
+print(health_df$EVTYPE[which.max(econ_df$TOTAL_DMG)])
+```
+
+There is a lot more we could do with this data, but that's it for now. 
